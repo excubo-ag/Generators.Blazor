@@ -81,6 +81,7 @@ namespace {namespaceName}
                 .GetMembers()
                 .Where(m => m.Kind == SymbolKind.Property)
                 .Cast<IPropertySymbol>()
+                .Where(ps => !ps.IsReadOnly)
                 .ToList();
             // TODO generate WriteSingleParameter method
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
