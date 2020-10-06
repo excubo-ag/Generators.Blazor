@@ -44,7 +44,7 @@ namespace Excubo.Generators.BetterBlazor
 
             var candidate_classes = GetCandidateClasses(receiver, GetCompilation(context));
 
-            foreach (var class_symbol in candidate_classes)
+            foreach (var class_symbol in candidate_classes.Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>())
             {
                 GenerateSetParametersAsyncMethod(context, class_symbol);
             }
@@ -56,7 +56,6 @@ namespace Excubo.Generators.BetterBlazor
             var type_kind = class_symbol.TypeKind switch { TypeKind.Class => "class", TypeKind.Interface => "interface", _ => "struct" };
             var type_parameters = string.Join(", ", class_symbol.TypeArguments.Select(t => t.Name));
             type_parameters = string.IsNullOrEmpty(type_parameters) ? type_parameters : "<" + type_parameters + ">";
-            // TODO generate override
             context.AddCode(class_symbol.ToDisplayString() + "_override.cs", $@"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
@@ -84,7 +83,6 @@ namespace {namespaceName}
                 .Where(ps => !ps.IsReadOnly)
                 .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass.Name == "Parameter"))
                 .ToList();
-            // TODO generate WriteSingleParameter method
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
 using System;
 
