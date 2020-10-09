@@ -80,7 +80,12 @@ namespace {namespaceName}
             var property_symbols = members.OfType<IPropertySymbol>();
             var writable_property_symbols = property_symbols.Where(ps => !ps.IsReadOnly);
             var parameter_symbols = writable_property_symbols
-                .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"));
+                .Where(ps => ps.GetAttributes().Any(a => false
+                || a.AttributeClass.Name == "Parameter"
+                || a.AttributeClass.Name == "ParameterAttribute"
+                || a.AttributeClass.Name == "CascadingParameter"
+                || a.AttributeClass.Name == "CascadingParameterAttribute"
+                                                ));
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
 using System;
 
