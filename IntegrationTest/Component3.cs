@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IntegrationTest
 {
+    [Excubo.Generators.BetterBlazor.GenerateSetParametersAsync]
     public partial class Component3 : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -15,6 +11,10 @@ namespace IntegrationTest
             builder.OpenElement(0, "div");
             builder.CloseElement();
         }
-        [Parameter] public object P1 { get; set; }
+        [Parameter] public string Parameter1 { get; set; }
+        private void Foo()
+        {
+            BetterBlazorImplementation__WriteSingleParameter("foo", new object());
+        }
     }
 }

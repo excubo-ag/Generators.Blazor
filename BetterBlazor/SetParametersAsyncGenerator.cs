@@ -76,13 +76,11 @@ namespace {namespaceName}
         }}
     }}
 }}");
-            var parameters = class_symbol
-                .GetMembers()
-                .Where(m => m.Kind == SymbolKind.Property)
-                .Cast<IPropertySymbol>()
-                .Where(ps => !ps.IsReadOnly)
-                .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass.Name == "Parameter"))
-                .ToList();
+            var members = class_symbol.GetMembers();
+            var property_symbols = members.OfType<IPropertySymbol>();
+            var writable_property_symbols = property_symbols.Where(ps => !ps.IsReadOnly);
+            var parameter_symbols = writable_property_symbols
+                .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"));
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
 using System;
 
@@ -94,7 +92,7 @@ namespace {namespaceName}
         {{
             switch (name)
             {{
-                {string.Join("\n", parameters.Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
+                {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
                 default:
                     throw new ArgumentException($""Unknown parameter: {{name}}"");
             }}

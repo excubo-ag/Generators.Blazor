@@ -7,10 +7,14 @@
 
 This project aims at improving performance for blazor with source generators.
 
+## Why should I use this?
+
 Blazor uses reflection to handle `[Parameter]`s of components. This is a source of inefficiency in the framework.
 The `SetParametersAsync` generator overrides the default reflection-based implementation of `Task SetParametersAsync(ParameterView parameters)` by one
 that is generated at compile time, similar to
 [the recommendation by MS](https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually)
+
+The performance improvement for just the parameter setting code is about 6x.
 
 ## How to use
 
