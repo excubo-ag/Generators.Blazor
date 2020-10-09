@@ -42,3 +42,62 @@ dotnet add package Excubo.Generators.BetterBlazor
 
 Add `@attribute [Excubo.Generators.BetterBlazor.GenerateSetParametersAsync]` to your `_Imports.razor` file. This enables the source generator on _all_ components.
 As sometimes you might want to override the method yourself, you can opt-out of the source generator by adding `@attribute [Excubo.Generators.BetterBlazor.DoNotGenerateSetParametersAsync]` to a component.
+
+## How it works
+
+If you write the code
+
+```cs
+using Excubo.Generators.BetterBlazor;
+using Microsoft.AspNetCore.Components;
+
+namespace IntegrationTest
+{
+    [GenerateSetParametersAsync]
+    public partial class Component : ComponentBase
+    {
+        [Parameter] public string Parameter1 { get; set; }
+        // usually you have more parameters
+    }
+}
+```
+
+the source generator generates
+
+```cs
+using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
+using System;
+
+namespace IntegrationTest
+{
+    public partial class Component
+    {
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            foreach (var parameter in parameters)
+            {
+                BetterBlazorImplementation__WriteSingleParameter(parameter.Name, parameter.Value);
+            }
+
+            // Run the normal lifecycle methods, but without assigning parameters again
+            return base.SetParametersAsync(ParameterView.Empty);
+        }
+
+        private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
+        {
+            switch (name)
+            {
+                case "Parameter1":
+                    this.Parameter1 = (string)value;
+                    break;
+                // more parameters would create more cases
+                default:
+                    throw new ArgumentException($"Unknown parameter: {name}");
+            }
+        }
+    }
+}
+```
+
+The default implementation of `SetParametersAsync` works with reflection, which is entirely removed by the generated code.
