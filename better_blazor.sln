@@ -14,7 +14,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests_BetterBlazor", "Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest", "IntegrationTest\IntegrationTest.csproj", "{EC9AA9DD-31D4-4547-8B56-A277A1FC9158}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTestApp", "IntegrationTestApp\IntegrationTestApp.csproj", "{31E34EA7-067F-4088-AF61-FC022313466F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestApp", "IntegrationTestApp\IntegrationTestApp.csproj", "{31E34EA7-067F-4088-AF61-FC022313466F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{4C426181-F96D-4BF9-9D01-331D4D1980CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{31E34EA7-067F-4088-AF61-FC022313466F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31E34EA7-067F-4088-AF61-FC022313466F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31E34EA7-067F-4088-AF61-FC022313466F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C426181-F96D-4BF9-9D01-331D4D1980CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C426181-F96D-4BF9-9D01-331D4D1980CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C426181-F96D-4BF9-9D01-331D4D1980CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C426181-F96D-4BF9-9D01-331D4D1980CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -47,6 +53,7 @@ Global
 		{0CF77FB7-884A-45AE-9D3B-A4BF7BEE4664} = {2DC7DAB9-0EC0-4C80-A1FA-FEDFE37F60F3}
 		{EC9AA9DD-31D4-4547-8B56-A277A1FC9158} = {2DC7DAB9-0EC0-4C80-A1FA-FEDFE37F60F3}
 		{31E34EA7-067F-4088-AF61-FC022313466F} = {2DC7DAB9-0EC0-4C80-A1FA-FEDFE37F60F3}
+		{4C426181-F96D-4BF9-9D01-331D4D1980CA} = {2DC7DAB9-0EC0-4C80-A1FA-FEDFE37F60F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B7214139-8C7D-4A16-B4DC-319C4E892B69}
