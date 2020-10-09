@@ -76,7 +76,8 @@ namespace {namespaceName}
         }}
     }}
 }}");
-            var members = class_symbol.GetMembers();
+            var type_with_bases = class_symbol.GetTypeHierarchy();
+            var members = type_with_bases.SelectMany(t => t.GetMembers());
             var property_symbols = members.OfType<IPropertySymbol>();
             var writable_property_symbols = property_symbols.Where(ps => !ps.IsReadOnly);
             var parameter_symbols = writable_property_symbols
@@ -162,6 +163,21 @@ namespace {namespaceName}
                 if (syntax_node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.AttributeLists.Count > 0)
                 {
                     CandidateClasses.Add(classDeclarationSyntax);
+                }
+            }
+        }
+    }
+
+    public static class TypeSymbolExtension
+    {
+        public static IEnumerable<INamedTypeSymbol> GetTypeHierarchy(this INamedTypeSymbol symbol)
+        {
+            yield return symbol;
+            if (symbol.BaseType != null)
+            {
+                foreach (var type in GetTypeHierarchy(symbol.BaseType))
+                {
+                    yield return type;
                 }
             }
         }
