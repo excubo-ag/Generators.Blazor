@@ -58,15 +58,15 @@ namespace Testing.Positive
     {
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name)
+            switch (name.ToLowerInvariant())
             {
-                case ""Parameter1"":
+                case ""parameter1"":
                     this.Parameter1 = (string)value;
                     break;
-                case ""Parameter2"":
+                case ""parameter2"":
                     this.Parameter2 = (object)value;
                     break;
-                case ""Parameter3"":
+                case ""parameter3"":
                     this.Parameter3 = (Excubo.Generators.BetterBlazor.GenerateSetParametersAsyncAttribute)value;
                     break;
                 default:

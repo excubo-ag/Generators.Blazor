@@ -158,12 +158,12 @@ namespace IntegrationConsoleTest
     {
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name)
+            switch (name.ToLowerInvariant())
             {
-                case ""Bar1"":
+                case ""bar1"":
                     this.Bar1 = (object)value;
                     break;
-                case ""Baz2"":
+                case ""baz2"":
                     this.Baz2 = (object)value;
                     break;
                 default:

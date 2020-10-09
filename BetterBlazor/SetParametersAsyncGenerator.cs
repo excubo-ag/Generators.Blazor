@@ -11,6 +11,8 @@ namespace Excubo.Generators.BetterBlazor
     [Generator]
     public partial class SetParametersAsyncGenerator : ISourceGenerator
     {
+        private static readonly DiagnosticDescriptor ParameterNameConflict = new DiagnosticDescriptor("BB0001", "Parameter name conflict", "Parameter names are case insensitive. {0} conflicts with {1}", "Conflict", DiagnosticSeverity.Error, isEnabledByDefault: true, description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
+
         private const string SetParametersAsyncAttributeText = @"
 using System;
 namespace Excubo.Generators.BetterBlazor
@@ -86,7 +88,22 @@ namespace {namespaceName}
                 || a.AttributeClass.Name == "ParameterAttribute"
                 || a.AttributeClass.Name == "CascadingParameter"
                 || a.AttributeClass.Name == "CascadingParameterAttribute"
-                                                ));
+            ));
+            var name_conflicts = parameter_symbols.GroupBy(ps => ps.Name.ToLowerInvariant()).Where(g => g.Count() > 1);
+            foreach (var conflict in name_conflicts)
+            {
+                var key = conflict.Key;
+                var conflicting_parameters = conflict.ToList();
+                foreach (var parameter in conflicting_parameters)
+                {
+                    var this_name = parameter.Name;
+                    var conflicting_name = conflicting_parameters.Select(p => p.Name).FirstOrDefault(n => n != this_name);
+                    foreach (var location in parameter.Locations)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(ParameterNameConflict, location, this_name, conflicting_name));
+                    }
+                }
+            }
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
 using System;
 
@@ -96,9 +113,9 @@ namespace {namespaceName}
     {{
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {{
-            switch (name)
+            switch (name.ToLowerInvariant())
             {{
-                {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
+                {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name.ToLowerInvariant()}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
                 default:
                     throw new ArgumentException($""Unknown parameter: {{name}}"");
             }}

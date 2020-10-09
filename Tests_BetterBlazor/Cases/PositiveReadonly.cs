@@ -57,9 +57,9 @@ namespace Testing.PositiveReadonly
     {
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name)
+            switch (name.ToLowerInvariant())
             {
-                case ""Parameter2"":
+                case ""parameter2"":
                     this.Parameter2 = (object)value;
                     break;
                 default:

@@ -86,9 +86,9 @@ namespace IntegrationTest
 
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name)
+            switch (name.ToLowerInvariant()) // parameter properties are actually case insensitive.
             {
-                case "Parameter1":
+                case "parameter1":
                     this.Parameter1 = (string)value;
                     break;
                 // more parameters would create more cases
