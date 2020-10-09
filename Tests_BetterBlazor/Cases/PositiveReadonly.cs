@@ -57,15 +57,25 @@ namespace Testing.PositiveReadonly
     {
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name.ToLowerInvariant())
+            switch (name)
             {
-                case ""parameter2"":
+                case ""Parameter2"":
                     this.Parameter2 = (object)value;
                     break;
                 default:
-                    throw new ArgumentException($""Unknown parameter: {name}"");
+                {
+                    switch (name.ToLowerInvariant())
+                    {
+                        case ""parameter2"":
+                            this.Parameter2 = (object)value;
+                            break;
+                        default:
+                            throw new ArgumentException($""Unknown parameter: {name}"");
+                    }
+                    break;
+                }
+            }
         }
-    }
     }
 }
 ");

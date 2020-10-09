@@ -86,14 +86,25 @@ namespace IntegrationTest
 
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name.ToLowerInvariant()) // parameter properties are actually case insensitive.
+            switch (name) // parameter properties are actually case insensitive. This is ignored here for performance, but handled later for correctness
             {
-                case "parameter1":
+                case "Parameter1":
                     this.Parameter1 = (string)value;
                     break;
                 // more parameters would create more cases
                 default:
-                    throw new ArgumentException($"Unknown parameter: {name}");
+                {
+                    switch (name.ToLowerInvariant()) // parameter properties are actually case insensitive.
+                    {
+                        case "parameter1":
+                            this.Parameter1 = (string)value;
+                            break;
+                        // more parameters would create more cases
+                        default:
+                            throw new ArgumentException($"Unknown parameter: {name}");
+                    }
+                    break;
+                }
             }
         }
     }

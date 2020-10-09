@@ -113,11 +113,19 @@ namespace {namespaceName}
     {{
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {{
-            switch (name.ToLowerInvariant())
+            switch (name)
             {{
-                {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name.ToLowerInvariant()}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
+                {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
                 default:
-                    throw new ArgumentException($""Unknown parameter: {{name}}"");
+                {{
+                    switch (name.ToLowerInvariant())
+                    {{
+                        {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name.ToLowerInvariant()}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
+                        default:
+                            throw new ArgumentException($""Unknown parameter: {{name}}"");
+                    }}
+                    break;
+                }}
             }}
         }}
     }}

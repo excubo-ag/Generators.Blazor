@@ -66,12 +66,19 @@ namespace EmptyClass
     {
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name.ToLowerInvariant())
+            switch (name)
             {
                 default:
-                    throw new ArgumentException($""Unknown parameter: {name}"");
+                {
+                    switch (name.ToLowerInvariant())
+                    {
+                        default:
+                            throw new ArgumentException($""Unknown parameter: {name}"");
+                    }
+                    break;
+                }
+            }
         }
-    }
     }
 }
 ");

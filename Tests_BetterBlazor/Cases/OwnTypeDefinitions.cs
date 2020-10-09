@@ -158,18 +158,31 @@ namespace IntegrationConsoleTest
     {
         private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
         {
-            switch (name.ToLowerInvariant())
+            switch (name)
             {
-                case ""bar1"":
+                case ""Bar1"":
                     this.Bar1 = (object)value;
                     break;
-                case ""baz2"":
+                case ""Baz2"":
                     this.Baz2 = (object)value;
                     break;
                 default:
-                    throw new ArgumentException($""Unknown parameter: {name}"");
+                {
+                    switch (name.ToLowerInvariant())
+                    {
+                        case ""bar1"":
+                            this.Bar1 = (object)value;
+                            break;
+                        case ""baz2"":
+                            this.Baz2 = (object)value;
+                            break;
+                        default:
+                            throw new ArgumentException($""Unknown parameter: {name}"");
+                    }
+                    break;
+                }
+            }
         }
-    }
     }
 }
 ");
