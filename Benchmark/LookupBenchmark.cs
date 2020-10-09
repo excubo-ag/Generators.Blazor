@@ -77,23 +77,23 @@ namespace Tests_BetterBlazor
             switch (name[0])
             {
                 case 'O':
-                {
-                    if (name[2] == 'M')
                     {
-                        switch (name[9])
+                        if (name[2] == 'M')
                         {
-                            case 'e': foo.OnMouseOver = value; return;
-                            case 'v': foo.OnMouseMove = value; return;
-                            case 't': foo.OnMouseOut = value; return;
+                            switch (name[9])
+                            {
+                                case 'e': foo.OnMouseOver = value; return;
+                                case 'v': foo.OnMouseMove = value; return;
+                                case 't': foo.OnMouseOut = value; return;
+                            }
                         }
+                        else
+                        {
+                            foo.OnClick = value;
+                            return;
+                        }
+                        break;
                     }
-                    else
-                    {
-                        foo.OnClick = value;
-                        return;
-                    }
-                    break;
-                }
                 case 'V':
                     if (name.Length == 5)
                     {
