@@ -5,16 +5,15 @@
 [![Nuget](https://img.shields.io/nuget/dt/Excubo.Generators.BetterBlazor)](https://www.nuget.org/packages/Excubo.Generators.BetterBlazor/)
 [![GitHub](https://img.shields.io/github/license/excubo-ag/Generators.BetterBlazor)](https://github.com/excubo-ag/Generators.BetterBlazor)
 
-This project aims at improving performance for blazor with source generators.
+This project improves the performance of Blazor components using source generators.
 
-## Why should I use this?
+## How does it work
 
-Blazor uses reflection to handle `[Parameter]`s of components. This is a source of inefficiency in the framework.
-The `SetParametersAsync` generator overrides the default reflection-based implementation of `Task SetParametersAsync(ParameterView parameters)` by one
-that is generated at compile time, similar to
-[the recommendation by MS](https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually)
+Blazor uses C#-Reflection to handle the setting of component's `[Parameter]`s which is slower than a compile-time approach.
+The `SetParametersAsync` generator overrides the default reflection-based implementation of `Task SetParametersAsync(ParameterView parameters)` following this 
+[recommendation by MS](https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually).
 
-The performance improvement for just the parameter setting code is about 6x.
+This increases the performance of setting parameters of components up to 6x.
 
 ## How to use
 
@@ -43,7 +42,7 @@ dotnet add package Excubo.Generators.BetterBlazor
 Add `@attribute [Excubo.Generators.BetterBlazor.GenerateSetParametersAsync]` to your `_Imports.razor` file. This enables the source generator on _all_ components.
 As sometimes you might want to override the method yourself, you can opt-out of the source generator by adding `@attribute [Excubo.Generators.BetterBlazor.DoNotGenerateSetParametersAsync]` to a component.
 
-## How it works
+## Implementation
 
 If you write the code
 
@@ -110,5 +109,3 @@ namespace IntegrationTest
     }
 }
 ```
-
-The default implementation of `SetParametersAsync` works with reflection, which is entirely removed by the generated code.
