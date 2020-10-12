@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Tests_BetterBlazor
+namespace Tests_Blazor
 {
     public class Foo
     {
@@ -34,7 +34,15 @@ namespace Tests_BetterBlazor
             }
             else
             {
-                throw new Exception();
+                var match = accessors.FirstOrDefault(a => a.Key.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                if (match.Value != null)
+                {
+                    match.Value.SetValue(foo, value);
+                }
+                else
+                {
+                    throw new Exception();
+                }
             }
         }
         private void SimpleSwitch(string name, Foo foo, object value)
@@ -69,7 +77,41 @@ namespace Tests_BetterBlazor
                     foo.OnMouseOut = value;
                     return;
                 default:
-                    throw new Exception();
+                    {
+                        switch (name.ToLowerInvariant())
+                        {
+                            case "value":
+                                foo.Value = value;
+                                return;
+                            case "valuechanged":
+                                foo.ValueChanged = value;
+                                return;
+                            case "childcontent":
+                                foo.ChildContent = value;
+                                return;
+                            case "class":
+                                foo.Class = value;
+                                return;
+                            case "style":
+                                foo.Style = value;
+                                return;
+                            case "onclick":
+                                foo.OnClick = value;
+                                return;
+                            case "onmouseover":
+                                foo.OnMouseOver = value;
+                                return;
+                            case "onmousemove":
+                                foo.OnMouseMove = value;
+                                return;
+                            case "onmouseout":
+                                foo.OnMouseOut = value;
+                                return;
+                            default:
+                                throw new Exception();
+                        }
+                        break;
+                    }
             }
         }
         private void Optimized(string name, Foo foo, object value)
@@ -77,8 +119,9 @@ namespace Tests_BetterBlazor
             switch (name[0])
             {
                 case 'O':
+                case 'o':
                     {
-                        if (name[2] == 'M')
+                        if (name[2] == 'M' || name[2] == 'm')
                         {
                             switch (name[9])
                             {
@@ -95,6 +138,7 @@ namespace Tests_BetterBlazor
                         break;
                     }
                 case 'V':
+                case 'v':
                     if (name.Length == 5)
                     {
                         foo.Value = value;
@@ -105,6 +149,7 @@ namespace Tests_BetterBlazor
                     }
                     return;
                 case 'C':
+                case 'c':
                     {
                         if (name.Length == 5)
                         {
@@ -117,6 +162,7 @@ namespace Tests_BetterBlazor
                     }
                     return;
                 case 'S':
+                case 's':
                     foo.Style = value;
                     return;
             }
@@ -131,7 +177,7 @@ namespace Tests_BetterBlazor
             data = Enumerable.Range(0, N).Select(_ =>
             {
                 var count = rnd.Next(2, 9);
-                return all_names.OrderBy(_ => rnd.NextDouble()).Take(count).ToList();
+                return all_names.OrderBy(_ => rnd.NextDouble()).Take(count).Select(n => rnd.NextDouble() < 0.002 ? n.ToLowerInvariant() : n).ToList();
             }).ToList();
         }
         [Benchmark]

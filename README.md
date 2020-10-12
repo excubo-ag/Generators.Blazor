@@ -1,9 +1,9 @@
 
-# Excubo.Generators.BetterBlazor
+# Excubo.Generators.Blazor
 
-[![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.BetterBlazor)](https://www.nuget.org/packages/Excubo.Generators.BetterBlazor/)
-[![Nuget](https://img.shields.io/nuget/dt/Excubo.Generators.BetterBlazor)](https://www.nuget.org/packages/Excubo.Generators.BetterBlazor/)
-[![GitHub](https://img.shields.io/github/license/excubo-ag/Generators.BetterBlazor)](https://github.com/excubo-ag/Generators.BetterBlazor)
+[![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
+[![Nuget](https://img.shields.io/nuget/dt/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
+[![GitHub](https://img.shields.io/github/license/excubo-ag/Generators.Blazor)](https://github.com/excubo-ag/Generators.Blazor)
 
 This project improves the performance of Blazor components using source generators.
 
@@ -17,37 +17,37 @@ This increases the performance of setting parameters of components up to 6x.
 
 ## How to use
 
-### 1. Install the nuget package Excubo.Generators.BetterBlazor
+### 1. Install the nuget package Excubo.Generators.Blazor
 
-Excubo.Generators.BetterBlazor is distributed [via nuget.org](https://www.nuget.org/packages/Excubo.Generators.BetterBlazor/).
-[![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.BetterBlazor)](https://www.nuget.org/packages/Excubo.Generators.BetterBlazor/)
+Excubo.Generators.Blazor is distributed [via nuget.org](https://www.nuget.org/packages/Excubo.Generators.Blazor/).
+[![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
 
 #### Package Manager:
 ```ps
-Install-Package Excubo.Generators.BetterBlazor
+Install-Package Excubo.Generators.Blazor
 ```
 
 #### .NET Cli:
 ```cmd
-dotnet add package Excubo.Generators.BetterBlazor
+dotnet add package Excubo.Generators.Blazor
 ```
 
 #### Package Reference
 ```xml
-<PackageReference Include="Excubo.Generators.BetterBlazor" />
+<PackageReference Include="Excubo.Generators.Blazor" />
 ```
 
 ### 2. Enable `GenerateSetParametersAsync` for all components
 
-Add `@attribute [Excubo.Generators.BetterBlazor.GenerateSetParametersAsync]` to your `_Imports.razor` file. This enables the source generator on _all_ components.
-As sometimes you might want to override the method yourself, you can opt-out of the source generator by adding `@attribute [Excubo.Generators.BetterBlazor.DoNotGenerateSetParametersAsync]` to a component.
+Add `@attribute [Excubo.Generators.Blazor.GenerateSetParametersAsync]` to your `_Imports.razor` file. This enables the source generator on _all_ components.
+As sometimes you might want to override the method yourself, you can opt-out of the source generator by adding `@attribute [Excubo.Generators.Blazor.DoNotGenerateSetParametersAsync]` to a component.
 
 ## Implementation
 
 If you write the code
 
 ```cs
-using Excubo.Generators.BetterBlazor;
+using Excubo.Generators.Blazor;
 using Microsoft.AspNetCore.Components;
 
 namespace IntegrationTest
@@ -76,14 +76,14 @@ namespace IntegrationTest
         {
             foreach (var parameter in parameters)
             {
-                BetterBlazorImplementation__WriteSingleParameter(parameter.Name, parameter.Value);
+                BlazorImplementation__WriteSingleParameter(parameter.Name, parameter.Value);
             }
 
             // Run the normal lifecycle methods, but without assigning parameters again
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
-        private void BetterBlazorImplementation__WriteSingleParameter(string name, object value)
+        private void BlazorImplementation__WriteSingleParameter(string name, object value)
         {
             switch (name) // parameter properties are actually case insensitive. This is ignored here for performance, but handled later for correctness
             {

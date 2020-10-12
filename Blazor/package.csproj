@@ -1,0 +1,41 @@
+<Project>
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <!--Title, Description, Tags, Product, Product-->
+  <PropertyGroup>
+    <Title>Blazor source generator</Title>
+    <Description>Source Generator for Blazor</Description>
+    <PackageTags>roslyn,source generator,SG,blazor</PackageTags>
+    <Product>Excubo.Generators.Blazor</Product>
+  </PropertyGroup>
+  <!--Author, Company-->
+  <PropertyGroup>
+    <Authors>Stefan Lörwald</Authors>
+    <Company>excubo ag</Company>
+  </PropertyGroup>
+  <!--Repository-->
+  <PropertyGroup>
+    <PackageProjectUrl>https://github.com/excubo-ag/Generators.Blazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/excubo-ag/Generators.Blazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <!--PackageId, Version-->
+  <PropertyGroup>
+    <PackageId>Excubo.Generators.Blazor</PackageId>
+    <Version>0.9.0</Version>
+  </PropertyGroup>
+  <!--Self Include-->
+  <ItemGroup>
+    <None Include="package.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

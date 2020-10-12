@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="../BetterBlazor/BetterBlazor.csproj" OutputItemType="Analyzer" />
+		<ProjectReference Include="../Blazor/Blazor.csproj" OutputItemType="Analyzer" />
 	</ItemGroup>
 
 </Project>

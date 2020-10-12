@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace IntegrationTest
 {
-    [Excubo.Generators.BetterBlazor.GenerateSetParametersAsync]
+    [Excubo.Generators.Blazor.GenerateSetParametersAsync]
     public partial class Component3 : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -14,7 +14,7 @@ namespace IntegrationTest
         [Parameter] public string Parameter1 { get; set; }
         private void Foo()
         {
-            BetterBlazorImplementation__WriteSingleParameter("foo", new object());
+            BlazorImplementation__WriteSingleParameter("foo", new object());
         }
     }
 }
