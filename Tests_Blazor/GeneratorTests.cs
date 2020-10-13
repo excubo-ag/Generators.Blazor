@@ -9,6 +9,6 @@ namespace Tests_Blazor
         public SetParametersAsyncGeneratorTests(ITestOutputHelper output_helper) : base(output_helper)
         {
         }
-        // for the actual test cases, see folder "Cases"
+        // for the actual test cases, see folder "SetParametersAsyncGenerator"
     }
 }
