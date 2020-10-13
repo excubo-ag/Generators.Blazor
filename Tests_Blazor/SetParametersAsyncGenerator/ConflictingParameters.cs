@@ -4,39 +4,36 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests
+    public partial class SetParametersAsyncGeneratorTests
     {
         [Fact]
-        public void Inheritance()
+        public void ConflictingParameters()
         {
             var userSource = @"
 using Excubo.Generators.Blazor;
 using System;
 
-namespace Testing.Positive.Inheritance
+namespace Testing.ConflictingParameters
 {
     [GenerateSetParametersAsyncAttribute]
-    public partial class Component : MyBase
+    public partial class Component
     {
-    }
-}
-    public partial class MyBase
-    {
-         [Parameter] public string Parameter1 { get; set; }
-         [Parameter] public System.Object Parameter2 { get; set; }
-         [CascadingParameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
+         [Parameter] public string Parameter { get; set; }
+         [Parameter] public System.Object parameter { get; set; }
     }
 }
 ";
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
-            generatorDiagnostics.Verify();
+            generatorDiagnostics.Verify(
+                new DiagnosticResult("BB0001", "Parameter", Microsoft.CodeAnalysis.DiagnosticSeverity.Error).WithLocation(10, 36),
+                new DiagnosticResult("BB0001", "parameter", Microsoft.CodeAnalysis.DiagnosticSeverity.Error).WithLocation(11, 43));
             Assert.Equal(3, generated.Length);
             Assert.True(generated.Any(g => g.Filename.EndsWith("GenerateSetParametersAsyncAttribute.cs")));
-            generated.ContainsFileWithContent("Testing.Positive.Inheritance.Component_override.cs", @"
+            generated.ContainsFileWithContent("Testing.ConflictingParameters.Component_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
-namespace Testing.Positive.Inheritance
+namespace Testing.ConflictingParameters
 {
     public partial class Component
     {
@@ -53,10 +50,10 @@ namespace Testing.Positive.Inheritance
     }
 }
 ");
-            generated.ContainsFileWithContent("Testing.Positive.Inheritance.Component_implementation.cs", @"
+            generated.ContainsFileWithContent("Testing.ConflictingParameters.Component_implementation.cs", @"
 using System;
 
-namespace Testing.Positive.Inheritance
+namespace Testing.ConflictingParameters
 {
     public partial class Component
     {
@@ -64,27 +61,21 @@ namespace Testing.Positive.Inheritance
         {
             switch (name)
             {
-                case ""Parameter1"":
-                    this.Parameter1 = (string)value;
+                case ""Parameter"":
+                    this.Parameter = (string)value;
                     break;
-                case ""Parameter2"":
-                    this.Parameter2 = (object)value;
-                    break;
-                case ""Parameter3"":
-                    this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
+                case ""parameter"":
+                    this.parameter = (object)value;
                     break;
                 default:
                 {
                     switch (name.ToLowerInvariant())
                     {
-                        case ""parameter1"":
-                            this.Parameter1 = (string)value;
+                        case ""parameter"":
+                            this.Parameter = (string)value;
                             break;
-                        case ""parameter2"":
-                            this.Parameter2 = (object)value;
-                            break;
-                        case ""parameter3"":
-                            this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
+                        case ""parameter"":
+                            this.parameter = (object)value;
                             break;
                         default:
                             throw new ArgumentException($""Unknown parameter: {name}"");

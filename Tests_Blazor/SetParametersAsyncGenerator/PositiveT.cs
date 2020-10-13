@@ -4,38 +4,37 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests
+    public partial class SetParametersAsyncGeneratorTests
     {
         [Fact]
-        public void ConflictingParameters()
+        public void PositiveT()
         {
             var userSource = @"
 using Excubo.Generators.Blazor;
 using System;
 
-namespace Testing.ConflictingParameters
+namespace Testing.Positive
 {
     [GenerateSetParametersAsyncAttribute]
-    public partial class Component
+    public partial class Component<T>
     {
-         [Parameter] public string Parameter { get; set; }
-         [Parameter] public System.Object parameter { get; set; }
+         [Parameter] public string Parameter1 { get; set; }
+         [Parameter] public T Parameter2 { get; set; }
+         [Parameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
     }
 }
 ";
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
-            generatorDiagnostics.Verify(
-                new DiagnosticResult("BB0001", "Parameter", Microsoft.CodeAnalysis.DiagnosticSeverity.Error).WithLocation(10, 36),
-                new DiagnosticResult("BB0001", "parameter", Microsoft.CodeAnalysis.DiagnosticSeverity.Error).WithLocation(11, 43));
+            generatorDiagnostics.Verify();
             Assert.Equal(3, generated.Length);
             Assert.True(generated.Any(g => g.Filename.EndsWith("GenerateSetParametersAsyncAttribute.cs")));
-            generated.ContainsFileWithContent("Testing.ConflictingParameters.Component_override.cs", @"
+            generated.ContainsFileWithContent("Testing.Positive.Component_T__override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
-namespace Testing.ConflictingParameters
+namespace Testing.Positive
 {
-    public partial class Component
+    public partial class Component<T>
     {
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -50,32 +49,38 @@ namespace Testing.ConflictingParameters
     }
 }
 ");
-            generated.ContainsFileWithContent("Testing.ConflictingParameters.Component_implementation.cs", @"
+            generated.ContainsFileWithContent("Testing.Positive.Component_T__implementation.cs", @"
 using System;
 
-namespace Testing.ConflictingParameters
+namespace Testing.Positive
 {
-    public partial class Component
+    public partial class Component<T>
     {
         private void BlazorImplementation__WriteSingleParameter(string name, object value)
         {
             switch (name)
             {
-                case ""Parameter"":
-                    this.Parameter = (string)value;
+                case ""Parameter1"":
+                    this.Parameter1 = (string)value;
                     break;
-                case ""parameter"":
-                    this.parameter = (object)value;
+                case ""Parameter2"":
+                    this.Parameter2 = (T)value;
+                    break;
+                case ""Parameter3"":
+                    this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
                     break;
                 default:
                 {
                     switch (name.ToLowerInvariant())
                     {
-                        case ""parameter"":
-                            this.Parameter = (string)value;
+                        case ""parameter1"":
+                            this.Parameter1 = (string)value;
                             break;
-                        case ""parameter"":
-                            this.parameter = (object)value;
+                        case ""parameter2"":
+                            this.Parameter2 = (T)value;
+                            break;
+                        case ""parameter3"":
+                            this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
                             break;
                         default:
                             throw new ArgumentException($""Unknown parameter: {name}"");

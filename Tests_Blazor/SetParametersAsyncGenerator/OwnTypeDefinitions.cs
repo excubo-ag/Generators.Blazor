@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests
+    public partial class SetParametersAsyncGeneratorTests
     {
         [Fact]
         public void OwnTypeDefinitions()

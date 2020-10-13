@@ -4,9 +4,9 @@ using Xunit.Abstractions;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests : TestBase<SetParametersAsyncGenerator>
+    public partial class SetParametersAsyncGeneratorTests : TestBase<SetParametersAsyncGenerator>
     {
-        public GeneratorTests(ITestOutputHelper output_helper) : base(output_helper)
+        public SetParametersAsyncGeneratorTests(ITestOutputHelper output_helper) : base(output_helper)
         {
         }
         // for the actual test cases, see folder "Cases"

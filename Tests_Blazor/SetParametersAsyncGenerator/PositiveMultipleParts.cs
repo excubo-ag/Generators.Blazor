@@ -4,22 +4,27 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests
+    public partial class SetParametersAsyncGeneratorTests
     {
         [Fact]
-        public void PositiveNotParameters()
+        public void PositiveMultipleParts()
         {
             var userSource = @"
 using Excubo.Generators.Blazor;
 using System;
 
-namespace Testing.PositiveNotParameters
+namespace Testing.Positive
 {
     [GenerateSetParametersAsyncAttribute]
     public partial class Component
     {
-         public string Parameter1 { get; }
-         public System.Object Parameter2 { get; set; }
+         [Parameter] public string Parameter1 { get; set; }
+    }
+    [GenerateSetParametersAsyncAttribute]
+    public partial class Component
+    {
+         [Parameter] public System.Object Parameter2 { get; set; }
+         [Parameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
     }
 }
 ";
@@ -27,11 +32,11 @@ namespace Testing.PositiveNotParameters
             generatorDiagnostics.Verify();
             Assert.Equal(3, generated.Length);
             Assert.True(generated.Any(g => g.Filename.EndsWith("GenerateSetParametersAsyncAttribute.cs")));
-            generated.ContainsFileWithContent("Testing.PositiveNotParameters.Component_override.cs", @"
+            generated.ContainsFileWithContent("Testing.Positive.Component_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
-namespace Testing.PositiveNotParameters
+namespace Testing.Positive
 {
     public partial class Component
     {
@@ -48,10 +53,10 @@ namespace Testing.PositiveNotParameters
     }
 }
 ");
-            generated.ContainsFileWithContent("Testing.PositiveNotParameters.Component_implementation.cs", @"
+            generated.ContainsFileWithContent("Testing.Positive.Component_implementation.cs", @"
 using System;
 
-namespace Testing.PositiveNotParameters
+namespace Testing.Positive
 {
     public partial class Component
     {
@@ -59,10 +64,28 @@ namespace Testing.PositiveNotParameters
         {
             switch (name)
             {
+                case ""Parameter1"":
+                    this.Parameter1 = (string)value;
+                    break;
+                case ""Parameter2"":
+                    this.Parameter2 = (object)value;
+                    break;
+                case ""Parameter3"":
+                    this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
+                    break;
                 default:
                 {
                     switch (name.ToLowerInvariant())
                     {
+                        case ""parameter1"":
+                            this.Parameter1 = (string)value;
+                            break;
+                        case ""parameter2"":
+                            this.Parameter2 = (object)value;
+                            break;
+                        case ""parameter3"":
+                            this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
+                            break;
                         default:
                             throw new ArgumentException($""Unknown parameter: {name}"");
                     }

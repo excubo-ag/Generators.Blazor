@@ -4,10 +4,10 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests
+    public partial class SetParametersAsyncGeneratorTests
     {
         [Fact]
-        public void Cascading()
+        public void Positive()
         {
             var userSource = @"
 using Excubo.Generators.Blazor;
@@ -20,7 +20,7 @@ namespace Testing.Positive
     {
          [Parameter] public string Parameter1 { get; set; }
          [Parameter] public System.Object Parameter2 { get; set; }
-         [CascadingParameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
+         [Parameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
     }
 }
 ";

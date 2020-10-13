@@ -4,23 +4,27 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class GeneratorTests
+    public partial class SetParametersAsyncGeneratorTests
     {
         [Fact]
-        public void PositiveT()
+        public void Inheritance()
         {
             var userSource = @"
 using Excubo.Generators.Blazor;
 using System;
 
-namespace Testing.Positive
+namespace Testing.Positive.Inheritance
 {
     [GenerateSetParametersAsyncAttribute]
-    public partial class Component<T>
+    public partial class Component : MyBase
+    {
+    }
+}
+    public partial class MyBase
     {
          [Parameter] public string Parameter1 { get; set; }
-         [Parameter] public T Parameter2 { get; set; }
-         [Parameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
+         [Parameter] public System.Object Parameter2 { get; set; }
+         [CascadingParameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
     }
 }
 ";
@@ -28,13 +32,13 @@ namespace Testing.Positive
             generatorDiagnostics.Verify();
             Assert.Equal(3, generated.Length);
             Assert.True(generated.Any(g => g.Filename.EndsWith("GenerateSetParametersAsyncAttribute.cs")));
-            generated.ContainsFileWithContent("Testing.Positive.Component_T__override.cs", @"
+            generated.ContainsFileWithContent("Testing.Positive.Inheritance.Component_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
-namespace Testing.Positive
+namespace Testing.Positive.Inheritance
 {
-    public partial class Component<T>
+    public partial class Component
     {
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -49,12 +53,12 @@ namespace Testing.Positive
     }
 }
 ");
-            generated.ContainsFileWithContent("Testing.Positive.Component_T__implementation.cs", @"
+            generated.ContainsFileWithContent("Testing.Positive.Inheritance.Component_implementation.cs", @"
 using System;
 
-namespace Testing.Positive
+namespace Testing.Positive.Inheritance
 {
-    public partial class Component<T>
+    public partial class Component
     {
         private void BlazorImplementation__WriteSingleParameter(string name, object value)
         {
@@ -64,7 +68,7 @@ namespace Testing.Positive
                     this.Parameter1 = (string)value;
                     break;
                 case ""Parameter2"":
-                    this.Parameter2 = (T)value;
+                    this.Parameter2 = (object)value;
                     break;
                 case ""Parameter3"":
                     this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
@@ -77,7 +81,7 @@ namespace Testing.Positive
                             this.Parameter1 = (string)value;
                             break;
                         case ""parameter2"":
-                            this.Parameter2 = (T)value;
+                            this.Parameter2 = (object)value;
                             break;
                         case ""parameter3"":
                             this.Parameter3 = (Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute)value;
