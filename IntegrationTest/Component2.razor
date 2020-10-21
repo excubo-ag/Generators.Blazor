@@ -1,4 +1,6 @@
-﻿@attribute [Excubo.Generators.Blazor.DoNotGenerateSetParametersAsync]
-<div class="my-component">
-    This Blazor component is defined in the <strong>IntegrationTest</strong> package.
-</div>
+﻿@foreach (var element in Enumerable.Empty<string>())
+{
+    <div class="my-component">
+        This Blazor component is defined in the <strong>IntegrationTest</strong> package. @element
+    </div>
+}

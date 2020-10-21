@@ -6,6 +6,9 @@ Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
 
-<Component3 Parameter1="new object()" />
-<Component1 P1="new object()" />
-<Component2 />
+@foreach (var element in Enumerable.Range(0, 1))
+{
+    <Component3 Parameter1="new object()" />
+    <Component1 P1="new object()" />
+    <Component2 />
+}

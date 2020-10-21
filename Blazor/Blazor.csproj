@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>true</WarningsAsErrors>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<AssemblyName>Excubo.Generators.Blazor</AssemblyName>
 		<RootNamespace>Excubo.Generators.Blazor</RootNamespace>
 	</PropertyGroup>
 	<!--Important: this is only a dev dependency, it won't be recursive-->
@@ -14,7 +15,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-3.final" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-4.final" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.0" PrivateAssets="all" />
 	</ItemGroup>
 
@@ -24,5 +25,9 @@
 
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+	<ItemGroup>
+		<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+		<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
 	</ItemGroup>
 </Project>

@@ -11,7 +11,7 @@ namespace Excubo.Generators.Blazor
     [Generator]
     public partial class EventParameterGenerator : ISourceGenerator
     {
-        private static readonly DiagnosticDescriptor EventNotUsed = new DiagnosticDescriptor("BB0002", "Event parameter not used", "Parameter names are case insensitive. {0} conflicts with {1}", "Conflict", DiagnosticSeverity.Error, isEnabledByDefault: true, description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
+        private static readonly DiagnosticDescriptor EventNotUsed = new DiagnosticDescriptor("BB0002", "Event parameter not used", "Parameter names are case insensitive. {0} conflicts with {1}.", "Conflict", DiagnosticSeverity.Error, isEnabledByDefault: true, description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
 
         private const string SetParametersAsyncAttributeText = @"
 using System;
