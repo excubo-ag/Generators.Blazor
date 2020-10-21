@@ -5,9 +5,31 @@
 [![Nuget](https://img.shields.io/nuget/dt/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
 [![GitHub](https://img.shields.io/github/license/excubo-ag/Generators.Blazor)](https://github.com/excubo-ag/Generators.Blazor)
 
-This project improves the performance of Blazor components using source generators.
+This project improves the performance of Blazor components using source generators and provides helpful diagnostics.
 
-## How does it work
+## Installation
+
+Excubo.Generators.Blazor is distributed [via nuget.org](https://www.nuget.org/packages/Excubo.Generators.Blazor/).
+[![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
+
+### Package Manager:
+```ps
+Install-Package Excubo.Generators.Blazor
+```
+
+### .NET Cli:
+```cmd
+dotnet add package Excubo.Generators.Blazor
+```
+
+### Package Reference
+```xml
+<PackageReference Include="Excubo.Generators.Blazor" />
+```
+
+## SetParametersAsync Source Generator
+
+### How does it work
 
 Blazor uses C#-Reflection to handle the setting of component's `[Parameter]`s which is slower than a compile-time approach.
 The `SetParametersAsync` generator overrides the default reflection-based implementation of `Task SetParametersAsync(ParameterView parameters)` following this 
@@ -15,34 +37,12 @@ The `SetParametersAsync` generator overrides the default reflection-based implem
 
 This increases the performance of setting parameters of components up to 6x.
 
-## How to use
-
-### 1. Install the nuget package Excubo.Generators.Blazor
-
-Excubo.Generators.Blazor is distributed [via nuget.org](https://www.nuget.org/packages/Excubo.Generators.Blazor/).
-[![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
-
-#### Package Manager:
-```ps
-Install-Package Excubo.Generators.Blazor
-```
-
-#### .NET Cli:
-```cmd
-dotnet add package Excubo.Generators.Blazor
-```
-
-#### Package Reference
-```xml
-<PackageReference Include="Excubo.Generators.Blazor" />
-```
-
-### 2. Enable `GenerateSetParametersAsync` for all components
+### How to enable
 
 Add `@attribute [Excubo.Generators.Blazor.GenerateSetParametersAsync]` to your `_Imports.razor` file. This enables the source generator on _all_ components.
 As sometimes you might want to override the method yourself, you can opt-out of the source generator by adding `@attribute [Excubo.Generators.Blazor.DoNotGenerateSetParametersAsync]` to a component.
 
-## Implementation
+### Implementation details
 
 If you write the code
 
@@ -107,5 +107,20 @@ namespace IntegrationTest
             }
         }
     }
+}
+```
+## Diagnostic for missing `@key` in loops
+
+There is a common source of issues when loops are used in Blazor without assigning `@key`s to the contained elements/components. This leads to performance issues, and can also lead to issues with correctness (e.g. when it is important which component gets disposed).
+By installing this nuget package, you get warnings when you forget to set `@key`:
+
+```html
+@foreach (var element in items)
+ ~~~~~~~
+ Warning: A key must be used when rendering loops in Blazor
+{
+    <div class="my-component">
+        @element
+    </div>
 }
 ```
