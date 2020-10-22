@@ -21,7 +21,7 @@ namespace EmptyClass
 }";
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
-            Assert.Equal(3, generated.Length);
+            Assert.Equal(2, generated.Length);
             generated.ContainsFileWithContent("EmptyClass.NothingToSee_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

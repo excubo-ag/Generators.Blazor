@@ -35,6 +35,7 @@ namespace Tests_Blazor.Helpers
                     MetadataReference.CreateFromFile(typeof(ConcurrentBag<>).Assembly.Location),
                     MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
                     MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                    MetadataReference.CreateFromFile(typeof(Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute).Assembly.Location)
                 }),
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 

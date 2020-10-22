@@ -9,8 +9,9 @@ namespace Tests_Blazor
         public void Empty()
         {
             var userSource = @"";
-            RunGenerator(userSource, out var generatorDiagnostics, out _);
+            RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
+            Assert.Empty(generated);
         }
     }
 }

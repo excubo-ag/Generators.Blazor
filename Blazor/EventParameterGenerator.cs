@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,23 +21,6 @@ namespace Excubo.Generators.Blazor
             isEnabledByDefault: true,
             description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
 
-        private const string SetParametersAsyncAttributeText = @"
-using System;
-namespace Excubo.Generators.Blazor
-{
-    public enum HtmlEvent
-    {
-        Click = 1
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    sealed class GenerateEventsAttribute : Attribute
-    {
-        public GenerateEventsAttribute(HtmlEvent events)
-        {
-        }
-    }
-}
-";
 
         public void Initialize(GeneratorInitializationContext context)
         {
@@ -46,15 +30,12 @@ namespace Excubo.Generators.Blazor
 
         public void Execute(GeneratorExecutionContext context)
         {
-            // https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually
-            context.AddCode("GenerateEventsAttribute", SetParametersAsyncAttributeText);
-
             if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
                 return;
             }
 
-            var candidate_classes = GetCandidateClasses(receiver, GetCompilation(context));
+            var candidate_classes = GetCandidateClasses(receiver, context.Compilation);
 
             foreach (var class_symbol in candidate_classes.Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>())
             {
@@ -94,13 +75,6 @@ namespace {namespaceName}
                     }
                 }
             }
-        }
-
-        private static Compilation GetCompilation(GeneratorExecutionContext context)
-        {
-            var options = (context.Compilation as CSharpCompilation)!.SyntaxTrees[0].Options as CSharpParseOptions;
-            var compilation = context.Compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(SourceText.From(SetParametersAsyncAttributeText, Encoding.UTF8), options));
-            return compilation;
         }
 
         /// <summary>

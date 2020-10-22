@@ -18,24 +18,8 @@ namespace Excubo.Generators.Blazor
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "A parameter marked as required may not be omitted when using the component.");
-        private const string RequiredParameterAttributes = @"
-using System;
-namespace Excubo.Generators.Blazor
-{
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    sealed class RequiredAttribute : Attribute
-    {
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    sealed class ParametersAreRequiredByDefaultAttribute : Attribute
-    {
-    }
-}
-";
         public void Execute(GeneratorExecutionContext context)
         {
-            context.AddCode("RequiredParameterAttributes", RequiredParameterAttributes);
-
             if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
                 return;

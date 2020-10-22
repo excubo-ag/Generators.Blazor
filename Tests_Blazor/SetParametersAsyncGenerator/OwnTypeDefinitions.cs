@@ -126,8 +126,8 @@ namespace IntegrationConsoleTest
 
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
-            Assert.Equal(3, generated.Length);
-            Assert.True(generated.Any(g => g.Filename.EndsWith("GenerateSetParametersAsyncAttribute.cs")));
+            Assert.Equal(2, generated.Length);
+            
             generated.ContainsFileWithContent("IntegrationConsoleTest.Baz_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
