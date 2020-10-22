@@ -21,43 +21,52 @@ namespace Excubo.Generators.Blazor
             var compilation = context.Compilation;
             foreach (var method in receiver.CandidateMethods.Where(m => m.Body != null))
             {
-                foreach (var method_statement in method.Body!.Statements)
+                AnalyzeRenderTreeMethod(context, method.Body!.Statements);
+            }
+            foreach (var lambda in receiver.CandidateLambdas)
+            {
+                AnalyzeRenderTreeMethod(context, (lambda.Body as BlockSyntax)!.Statements);
+            }
+        }
+
+        private static void AnalyzeRenderTreeMethod(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements)
+        {
+            foreach (var statement in statements)
+            {
+                if (statement.IsKind(SyntaxKind.ForEachStatement) || statement.IsKind(SyntaxKind.ForStatement))
                 {
-                    if (method_statement.IsKind(SyntaxKind.ForEachStatement) || method_statement.IsKind(SyntaxKind.ForStatement))
+                    var for_keyword = (statement as ForEachStatementSyntax)?.ForEachKeyword ?? (statement as ForStatementSyntax)?.ForKeyword;
+                    // TODO analyze for-body and see if there are any builder*.OpenComponent / builder*.OpenElement and no builder*.SetKey()
+                    var for_body = (statement as ForEachStatementSyntax)?.Statement ?? (statement as ForStatementSyntax)?.Statement;
+                    if (for_body is BlockSyntax for_block)
                     {
-                        var for_keyword = (method_statement as ForEachStatementSyntax)?.ForEachKeyword ?? (method_statement as ForStatementSyntax)?.ForKeyword;
-                        // TODO analyze for-body and see if there are any builder*.OpenComponent / builder*.OpenElement and no builder*.SetKey()
-                        var for_body = (method_statement as ForEachStatementSyntax)?.Statement ?? (method_statement as ForStatementSyntax)?.Statement;
-                        if (for_body is BlockSyntax for_block)
+                        int level = -1;
+                        bool saw_key = false;
+                        // TODO find top-level OpenElement/OpenComponent, ignore any non-top-level OpenElement/OpenComponent and make sure there's a key on all of them.
+                        foreach (var invokation in for_block.Statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
                         {
-                            int level = -1;
-                            bool saw_key = false;
-                            // TODO find top-level OpenElement/OpenComponent, ignore any non-top-level OpenElement/OpenComponent and make sure there's a key on all of them.
-                            foreach (var invokation in for_block.Statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
+                            if (invokation.Expression is MemberAccessExpressionSyntax maes)
                             {
-                                if (invokation.Expression is MemberAccessExpressionSyntax maes)
+                                if (maes.Name.ToString() == "OpenElement" || maes.Name.ToString().StartsWith("OpenComponent"))
                                 {
-                                    if (maes.Name.ToString() == "OpenElement" || maes.Name.ToString().StartsWith("OpenComponent"))
+                                    ++level;
+                                    if (level == 0)
                                     {
-                                        ++level;
-                                        if (level == 0)
-                                        {
-                                            // this is a top level element, we therefore have to reset whether we saw a key yet. All top-level elements/components within a loop need a key
-                                            saw_key = false;
-                                        }
+                                        // this is a top level element, we therefore have to reset whether we saw a key yet. All top-level elements/components within a loop need a key
+                                        saw_key = false;
                                     }
-                                    else if (maes.Name.ToString() == "CloseElement" || maes.Name.ToString() == "CloseComponent")
+                                }
+                                else if (maes.Name.ToString() == "CloseElement" || maes.Name.ToString() == "CloseComponent")
+                                {
+                                    if (level == 0 && !saw_key)
                                     {
-                                        if (level == 0 && !saw_key)
-                                        {
-                                            context.ReportDiagnostic(Diagnostic.Create(KeylessForeach, for_keyword!.Value.GetLocation()));
-                                        }
-                                        --level;
+                                        context.ReportDiagnostic(Diagnostic.Create(KeylessForeach, for_keyword!.Value.GetLocation()));
                                     }
-                                    else if (level == 0 && maes.Name.ToString() == "SetKey")
-                                    {
-                                        saw_key = true;
-                                    }
+                                    --level;
+                                }
+                                else if (level == 0 && maes.Name.ToString() == "SetKey")
+                                {
+                                    saw_key = true;
                                 }
                             }
                         }
@@ -78,6 +87,7 @@ namespace Excubo.Generators.Blazor
         internal class SyntaxReceiver : ISyntaxReceiver
         {
             public List<MethodDeclarationSyntax> CandidateMethods { get; } = new List<MethodDeclarationSyntax>();
+            public List<ParenthesizedLambdaExpressionSyntax> CandidateLambdas { get; } = new List<ParenthesizedLambdaExpressionSyntax>();
 
             /// <summary>
             /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
@@ -88,6 +98,13 @@ namespace Excubo.Generators.Blazor
                 if (syntax_node is MethodDeclarationSyntax method && method.Identifier.ToString() == "BuildRenderTree")
                 {
                     CandidateMethods.Add(method);
+                }
+                if (syntax_node is ParenthesizedLambdaExpressionSyntax lambda
+                    && lambda.ParameterList.Parameters.Count == 1
+                    && lambda.ParameterList.Parameters[0].Identifier.ToString().Contains("builder")
+                    && lambda.Body is BlockSyntax)
+                {
+                    CandidateLambdas.Add(lambda);
                 }
             }
         }
