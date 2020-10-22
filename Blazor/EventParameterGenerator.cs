@@ -22,7 +22,7 @@ namespace Excubo.Generators.Blazor
         Click = 1
     }
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class GenerateEventsAttribute : Attribute
+    sealed class GenerateEventsAttribute : Attribute
     {
         public GenerateEventsAttribute(HtmlEvent events)
         {

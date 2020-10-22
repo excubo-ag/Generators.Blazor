@@ -8,4 +8,8 @@
     <ProjectReference Include="..\IntegrationTest\IntegrationTest.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="../Blazor/Blazor.csproj" OutputItemType="Analyzer" />
+	</ItemGroup>
+
 </Project>
