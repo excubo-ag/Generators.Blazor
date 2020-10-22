@@ -38,38 +38,59 @@ namespace Excubo.Generators.Blazor
                     var for_keyword = (statement as ForEachStatementSyntax)?.ForEachKeyword ?? (statement as ForStatementSyntax)?.ForKeyword;
                     // TODO analyze for-body and see if there are any builder*.OpenComponent / builder*.OpenElement and no builder*.SetKey()
                     var for_body = (statement as ForEachStatementSyntax)?.Statement ?? (statement as ForStatementSyntax)?.Statement;
-                    if (for_body is BlockSyntax for_block)
+                    if (!(for_body is BlockSyntax for_block))
                     {
-                        int level = -1;
-                        bool saw_key = false;
-                        // TODO find top-level OpenElement/OpenComponent, ignore any non-top-level OpenElement/OpenComponent and make sure there's a key on all of them.
-                        foreach (var invokation in for_block.Statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
-                        {
-                            if (invokation.Expression is MemberAccessExpressionSyntax maes)
-                            {
-                                if (maes.Name.ToString() == "OpenElement" || maes.Name.ToString().StartsWith("OpenComponent"))
-                                {
-                                    ++level;
-                                    if (level == 0)
-                                    {
-                                        // this is a top level element, we therefore have to reset whether we saw a key yet. All top-level elements/components within a loop need a key
-                                        saw_key = false;
-                                    }
-                                }
-                                else if (maes.Name.ToString() == "CloseElement" || maes.Name.ToString() == "CloseComponent")
-                                {
-                                    if (level == 0 && !saw_key)
-                                    {
-                                        context.ReportDiagnostic(Diagnostic.Create(KeylessForeach, for_keyword!.Value.GetLocation()));
-                                    }
-                                    --level;
-                                }
-                                else if (level == 0 && maes.Name.ToString() == "SetKey")
-                                {
-                                    saw_key = true;
-                                }
-                            }
-                        }
+                        continue;
+                    }
+                    int level = -1;
+                    bool saw_key = false;
+                    AnalyzeStatements(context, for_keyword, for_block.Statements, ref level, ref saw_key);
+                }
+            }
+        }
+
+        private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxToken? for_keyword, SyntaxList<StatementSyntax> statements, ref int level, ref bool saw_key)
+        {
+            foreach (var invokation in statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
+            {
+                AnalyzeInvokation(context, for_keyword, ref level, ref saw_key, invokation);
+            }
+        }
+
+        private static void AnalyzeInvokation(GeneratorExecutionContext context, SyntaxToken? for_keyword, ref int level, ref bool saw_key, InvocationExpressionSyntax invokation)
+        {
+            if (invokation.Expression is MemberAccessExpressionSyntax maes)
+            {
+                if (maes.Name.ToString() == "OpenElement" || maes.Name.ToString().StartsWith("OpenComponent"))
+                {
+                    ++level;
+                    if (level == 0)
+                    {
+                        // this is a top level element, we therefore have to reset whether we saw a key yet. All top-level elements/components within a loop need a key
+                        saw_key = false;
+                    }
+                }
+                else if (maes.Name.ToString() == "CloseElement" || maes.Name.ToString() == "CloseComponent")
+                {
+                    if (level == 0 && !saw_key)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(KeylessForeach, for_keyword!.Value.GetLocation()));
+                    }
+                    --level;
+                }
+                else if (level == 0 && maes.Name.ToString() == "SetKey")
+                {
+                    saw_key = true;
+                }
+                else if (invokation.ArgumentList.Arguments.Any(a => a.Expression is IdentifierNameSyntax ins && ins.Identifier.ToString().Contains("builder")))
+                {
+                    // TODO go to that methods body and pretend we're still in this context
+                    var model = context.Compilation.GetSemanticModel(invokation.SyntaxTree);
+                    var called_method = model.GetSymbolInfo(invokation);
+                    if (called_method.Symbol != null && called_method.Symbol.Kind is SymbolKind.Method)
+                    {
+                        var definition = (called_method.Symbol as IMethodSymbol).DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
+                        AnalyzeStatements(context, for_keyword, definition.Body.Statements, ref level, ref saw_key);
                     }
                 }
             }

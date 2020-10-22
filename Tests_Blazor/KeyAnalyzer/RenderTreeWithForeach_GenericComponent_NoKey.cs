@@ -6,7 +6,7 @@ namespace Tests_Blazor
     public partial class KeyAnalyzerTests
     {
         [Fact]
-        public void RenderTreeWithForeach_Component_NoKey()
+        public void RenderTreeWithForeach_GenericComponent_NoKey()
         {
             var userSource = @"
 namespace Foo
@@ -17,8 +17,15 @@ namespace Foo
         {
             foreach (var element in items)
             {
-                builder.OpenComponent<TComponent>(0);
-                builder.CloseComponent();
+                Foo.Bar.TypeInference.CreateListItem_0<object>(builder, 0);
+            }
+        }
+        internal static class TypeInference
+        {
+            public static void CreateListItem_0<T>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq)
+            {
+                __builder.OpenComponent<global::Excubo.Blazor.TreeViews.__Internal.ListItem<T>>(seq);
+                __builder.CloseComponent();
             }
         }
     }

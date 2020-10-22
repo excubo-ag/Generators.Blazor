@@ -13,7 +13,7 @@ namespace Foo
 {
 public class Bar
 {
-    public void BuildRenderTree(RenderTreBuilder builder)
+    public void BuildRenderTree(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
     {
         foreach (var element in items)
         {

@@ -13,7 +13,7 @@ namespace Foo
 {
 public class Bar
 {
-    public void BuildRenderTree(RenderTreBuilder builder)
+    public void BuildRenderTree(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
     {
         builder.OpenComponent(0, typeof(Foo));
         builder.AddAttribute(1, ""ChildContent"", (builder2) =>
