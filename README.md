@@ -9,22 +9,39 @@ This project improves the performance of Blazor components using source generato
 
 ## Installation
 
+### Nuget
+
 Excubo.Generators.Blazor is distributed [via nuget.org](https://www.nuget.org/packages/Excubo.Generators.Blazor/).
 [![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
 
-### Package Manager:
+#### Package Manager:
 ```ps
 Install-Package Excubo.Generators.Blazor
 ```
 
-### .NET Cli:
+#### .NET Cli:
 ```cmd
 dotnet add package Excubo.Generators.Blazor
 ```
 
-### Package Reference
+#### Package Reference
 ```xml
 <PackageReference Include="Excubo.Generators.Blazor" />
+```
+
+### Project settings
+
+Your project needs to use `<LangVersion>preview</LangVersion>`, e.g.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;net5.0</TargetFrameworks>
+		<LangVersion>preview</LangVersion>
+		<RazorLangVersion>3.0</RazorLangVersion>
+	</PropertyGroup>
+    <!-- .... -->
+</Project>
 ```
 
 ## SetParametersAsync Source Generator
