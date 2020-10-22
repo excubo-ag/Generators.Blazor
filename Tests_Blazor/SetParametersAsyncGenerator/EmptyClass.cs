@@ -22,20 +22,6 @@ namespace EmptyClass
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
             Assert.Equal(3, generated.Length);
-            generated.ContainsFileWithContent("GenerateSetParametersAsyncAttribute.cs", @"
-using System;
-namespace Excubo.Generators.Blazor
-    {
-        [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-        sealed class GenerateSetParametersAsyncAttribute : Attribute
-        {
-        }
-        [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-        sealed class DoNotGenerateSetParametersAsyncAttribute : Attribute
-        {
-        }
-    }
-");
             generated.ContainsFileWithContent("EmptyClass.NothingToSee_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

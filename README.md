@@ -42,6 +42,8 @@ This increases the performance of setting parameters of components up to 6x.
 Add `@attribute [Excubo.Generators.Blazor.GenerateSetParametersAsync]` to your `_Imports.razor` file. This enables the source generator on _all_ components.
 As sometimes you might want to override the method yourself, you can opt-out of the source generator by adding `@attribute [Excubo.Generators.Blazor.DoNotGenerateSetParametersAsync]` to a component.
 
+You can use `[GenerateSetParametersAsync(RequireExactMatch = true)]`, if you do not require parameters to match when they differ in case.
+
 ### Implementation details
 
 If you write the code

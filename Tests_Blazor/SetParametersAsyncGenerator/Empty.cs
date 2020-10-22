@@ -19,6 +19,7 @@ namespace Excubo.Generators.Blazor
         [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
         sealed class GenerateSetParametersAsyncAttribute : Attribute
         {
+        public bool RequireExactMatch { get; set; }
         }
         [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
         sealed class DoNotGenerateSetParametersAsyncAttribute : Attribute

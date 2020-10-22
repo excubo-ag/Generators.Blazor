@@ -20,6 +20,7 @@ namespace Excubo.Generators.Blazor
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     sealed class GenerateSetParametersAsyncAttribute : Attribute
     {
+        public bool RequireExactMatch { get; set; }
     }
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     sealed class DoNotGenerateSetParametersAsyncAttribute : Attribute
@@ -54,6 +55,7 @@ namespace Excubo.Generators.Blazor
 
         private static void GenerateSetParametersAsyncMethod(GeneratorExecutionContext context, INamedTypeSymbol class_symbol)
         {
+            var force_exact_match = class_symbol.GetAttributes().Any(a => a.NamedArguments.Any(na => na.Key == "RequireExactMatch" && na.Value.Value is bool v && v));
             var namespaceName = class_symbol.ContainingNamespace.ToDisplayString();
             var type_kind = class_symbol.TypeKind switch { TypeKind.Class => "class", TypeKind.Interface => "interface", _ => "struct" };
             var type_parameters = string.Join(", ", class_symbol.TypeArguments.Select(t => t.Name));
@@ -104,6 +106,69 @@ namespace {namespaceName}
                     }
                 }
             }
+            var all = parameter_symbols.ToList();
+            var catch_all_parameter = parameter_symbols.FirstOrDefault(p =>
+            {
+                var parameter_attr = p.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name.StartsWith("Parameter"));
+                return parameter_attr != null && parameter_attr.NamedArguments.Any(n => n.Key == "CaptureUnmatchedValues" && n.Value.Value is bool v && v);
+            });
+            var lower_case_match_cases = parameter_symbols.Except(new[] { catch_all_parameter }).Select(p => $"case \"{p.Name.ToLowerInvariant()}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;");
+            var lower_case_match_default = catch_all_parameter == null ? @"default: throw new ArgumentException($""Unknown parameter: {name}"");" : $@"
+default:
+{{
+    this.{catch_all_parameter.Name} ??= new System.Collections.Generic.Dictionary<string, object>();
+    if (!this.{catch_all_parameter.Name}.ContainsKey(name))
+    {{
+        this.{catch_all_parameter.Name}.Add(name, value);
+    }}
+    else
+    {{
+        this.{catch_all_parameter.Name}[name] = value;
+    }}
+    break;
+}}";
+
+            var exact_match_cases = parameter_symbols.Except(new[] { catch_all_parameter }).Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;");
+            string exact_match_default;
+            if (force_exact_match)
+            {
+                if (catch_all_parameter == null) // exact matches are forced, and we do not have a catch-all parameter, therefore we need to throw on unmatched parameter
+                {
+                    exact_match_default = @"default: { throw new ArgumentException($""Unknown parameter: {name}""); }";
+                }
+                else // exact matches are forced, and we DO have a catch-all parameter, therefore we simply add that unmatched parameter to the dictionary
+                {
+                    exact_match_default = $@"
+default:
+{{
+    this.{catch_all_parameter.Name} ??= new System.Collections.Generic.Dictionary<string, object>();
+    if (!this.{catch_all_parameter.Name}.ContainsKey(name))
+    {{
+        this.{catch_all_parameter.Name}.Add(name, value);
+    }}
+    else
+    {{
+        this.{catch_all_parameter.Name}[name] = value;
+    }}
+    break;
+}}";
+                }
+            }
+            else
+            {
+                // exact matches are not forced, so if there is no exact match, we fall back to compare it in lower case
+                exact_match_default = $@"
+default:
+{{
+    switch (name.ToLowerInvariant())
+    {{
+        {string.Join("\n", lower_case_match_cases)}
+        {lower_case_match_default}
+    }}
+    break;
+}}
+";
+            }
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
 using System;
 
@@ -115,17 +180,8 @@ namespace {namespaceName}
         {{
             switch (name)
             {{
-                {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
-                default:
-                {{
-                    switch (name.ToLowerInvariant())
-                    {{
-                        {string.Join("\n", parameter_symbols.Select(p => $"case \"{p.Name.ToLowerInvariant()}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;"))}
-                        default:
-                            throw new ArgumentException($""Unknown parameter: {{name}}"");
-                    }}
-                    break;
-                }}
+                {string.Join("\n", exact_match_cases)}
+                {exact_match_default}
             }}
         }}
     }}
