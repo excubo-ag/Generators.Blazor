@@ -64,6 +64,8 @@ namespace Excubo.Generators.Blazor
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace {namespaceName}
 {{
     public partial class {class_symbol.Name}{type_parameters}
@@ -79,7 +81,10 @@ namespace {namespaceName}
             return base.SetParametersAsync(ParameterView.Empty);
         }}
     }}
-}}");
+}}
+#pragma warning restore CS8632
+#pragma warning restore CS0162
+");
             var type_with_bases = class_symbol.GetTypeHierarchy();
             var members = type_with_bases.SelectMany(t => t.GetMembers());
             var property_symbols = members.OfType<IPropertySymbol>();
@@ -172,6 +177,8 @@ default:
             context.AddCode(class_symbol.ToDisplayString() + "_implementation.cs", $@"
 using System;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace {namespaceName}
 {{
     public partial class {class_symbol.Name}{type_parameters}
@@ -185,7 +192,9 @@ namespace {namespaceName}
             }}
         }}
     }}
-}}");
+}}
+#pragma warning restore CS8632
+#pragma warning restore CS0162");
         }
 
         private static Compilation GetCompilation(GeneratorExecutionContext context)

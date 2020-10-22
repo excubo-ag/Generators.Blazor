@@ -33,6 +33,8 @@ namespace Testing.ConflictingParameters
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace Testing.ConflictingParameters
 {
     public partial class Component
@@ -49,10 +51,14 @@ namespace Testing.ConflictingParameters
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
             generated.ContainsFileWithContent("Testing.ConflictingParameters.Component_implementation.cs", @"
 using System;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace Testing.ConflictingParameters
 {
     public partial class Component
@@ -86,6 +92,8 @@ namespace Testing.ConflictingParameters
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
         }
     }

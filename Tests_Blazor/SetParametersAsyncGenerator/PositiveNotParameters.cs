@@ -31,6 +31,8 @@ namespace Testing.PositiveNotParameters
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace Testing.PositiveNotParameters
 {
     public partial class Component
@@ -47,10 +49,14 @@ namespace Testing.PositiveNotParameters
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
             generated.ContainsFileWithContent("Testing.PositiveNotParameters.Component_implementation.cs", @"
 using System;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace Testing.PositiveNotParameters
 {
     public partial class Component
@@ -72,6 +78,8 @@ namespace Testing.PositiveNotParameters
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
         }
     }

@@ -36,6 +36,8 @@ namespace Testing.Positive.Inheritance
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace Testing.Positive.Inheritance
 {
     public partial class Component
@@ -52,10 +54,14 @@ namespace Testing.Positive.Inheritance
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
             generated.ContainsFileWithContent("Testing.Positive.Inheritance.Component_implementation.cs", @"
 using System;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace Testing.Positive.Inheritance
 {
     public partial class Component
@@ -95,6 +101,8 @@ namespace Testing.Positive.Inheritance
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
         }
     }

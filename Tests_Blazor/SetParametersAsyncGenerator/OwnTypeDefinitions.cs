@@ -132,6 +132,8 @@ namespace IntegrationConsoleTest
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace IntegrationConsoleTest
 {
     public partial class Baz
@@ -148,10 +150,14 @@ namespace IntegrationConsoleTest
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
             generated.ContainsFileWithContent("IntegrationConsoleTest.Baz_implementation.cs", @"
 using System;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace IntegrationConsoleTest
 {
     public partial class Baz
@@ -185,6 +191,8 @@ namespace IntegrationConsoleTest
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
         }
     }

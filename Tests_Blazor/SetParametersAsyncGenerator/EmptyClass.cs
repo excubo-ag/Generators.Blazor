@@ -26,6 +26,8 @@ namespace EmptyClass
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace EmptyClass
 {
     public partial class NothingToSee
@@ -42,10 +44,14 @@ namespace EmptyClass
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
             generated.ContainsFileWithContent("EmptyClass.NothingToSee_implementation.cs", @"
 using System;
 
+#pragma warning disable CS0162
+#pragma warning disable CS8632
 namespace EmptyClass
 {
     public partial class NothingToSee
@@ -67,6 +73,8 @@ namespace EmptyClass
         }
     }
 }
+#pragma warning restore CS8632
+#pragma warning restore CS0162
 ");
         }
     }
