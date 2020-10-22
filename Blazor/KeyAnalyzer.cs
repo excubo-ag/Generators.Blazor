@@ -9,11 +9,18 @@ namespace Excubo.Generators.Blazor
     [Generator]
     public partial class KeyAnalyzer : ISourceGenerator
     {
-        private static readonly DiagnosticDescriptor KeylessForeach = new DiagnosticDescriptor("BB0003", "foreach without key", "A key must be used when rendering loops in Blazor", "Correctness", DiagnosticSeverity.Warning, isEnabledByDefault: true, description: "Not using a @key within a for-loop or foreach-loop in Blazor not only can have a negative performance impact, but also cause problems with disposable components.");
+        private static readonly DiagnosticDescriptor KeylessForeach = new DiagnosticDescriptor(
+            id: "BB0003",
+            title: "foreach without key",
+            messageFormat: "A key must be used when rendering loops in Blazor",
+            category: "Correctness",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Not using a @key within a for-loop or foreach-loop in Blazor not only can have a negative performance impact, but also cause problems with disposable components.");
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
+            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
                 return;
             }
@@ -38,12 +45,12 @@ namespace Excubo.Generators.Blazor
                     var for_keyword = (statement as ForEachStatementSyntax)?.ForEachKeyword ?? (statement as ForStatementSyntax)?.ForKeyword;
                     // TODO analyze for-body and see if there are any builder*.OpenComponent / builder*.OpenElement and no builder*.SetKey()
                     var for_body = (statement as ForEachStatementSyntax)?.Statement ?? (statement as ForStatementSyntax)?.Statement;
-                    if (!(for_body is BlockSyntax for_block))
+                    if (for_body is not BlockSyntax for_block)
                     {
                         continue;
                     }
-                    int level = -1;
-                    bool saw_key = false;
+                    var level = -1;
+                    var saw_key = false;
                     AnalyzeStatements(context, for_keyword, for_block.Statements, ref level, ref saw_key);
                 }
             }
@@ -89,8 +96,8 @@ namespace Excubo.Generators.Blazor
                     var called_method = model.GetSymbolInfo(invokation);
                     if (called_method.Symbol != null && called_method.Symbol.Kind is SymbolKind.Method)
                     {
-                        var definition = (called_method.Symbol as IMethodSymbol).DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
-                        AnalyzeStatements(context, for_keyword, definition.Body.Statements, ref level, ref saw_key);
+                        var definition = (called_method.Symbol as IMethodSymbol)!.DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
+                        AnalyzeStatements(context, for_keyword, definition!.Body!.Statements, ref level, ref saw_key);
                     }
                 }
             }

@@ -11,7 +11,14 @@ namespace Excubo.Generators.Blazor
     [Generator]
     public partial class SetParametersAsyncGenerator : ISourceGenerator
     {
-        private static readonly DiagnosticDescriptor ParameterNameConflict = new DiagnosticDescriptor("BB0001", "Parameter name conflict", "Parameter names are case insensitive. {0} conflicts with {1}.", "Conflict", DiagnosticSeverity.Error, isEnabledByDefault: true, description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
+        private static readonly DiagnosticDescriptor ParameterNameConflict = new DiagnosticDescriptor(
+            id: "BB0001",
+            title: "Parameter name conflict",
+            messageFormat: "Parameter names are case insensitive. {0} conflicts with {1}.",
+            category: "Conflict",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
 
         private const string SetParametersAsyncAttributeText = @"
 using System;
@@ -40,7 +47,7 @@ namespace Excubo.Generators.Blazor
             // https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually
             context.AddCode("GenerateSetParametersAsyncAttribute", SetParametersAsyncAttributeText);
 
-            if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
+            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
                 return;
             }
@@ -91,7 +98,7 @@ namespace {namespaceName}
             var writable_property_symbols = property_symbols.Where(ps => !ps.IsReadOnly);
             var parameter_symbols = writable_property_symbols
                 .Where(ps => ps.GetAttributes().Any(a => false
-                || a.AttributeClass.Name == "Parameter"
+                || a.AttributeClass!.Name == "Parameter"
                 || a.AttributeClass.Name == "ParameterAttribute"
                 || a.AttributeClass.Name == "CascadingParameter"
                 || a.AttributeClass.Name == "CascadingParameterAttribute"
@@ -114,7 +121,7 @@ namespace {namespaceName}
             var all = parameter_symbols.ToList();
             var catch_all_parameter = parameter_symbols.FirstOrDefault(p =>
             {
-                var parameter_attr = p.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name.StartsWith("Parameter"));
+                var parameter_attr = p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Name.StartsWith("Parameter"));
                 return parameter_attr != null && parameter_attr.NamedArguments.Any(n => n.Key == "CaptureUnmatchedValues" && n.Value.Value is bool v && v);
             });
             var lower_case_match_cases = parameter_symbols.Except(new[] { catch_all_parameter }).Select(p => $"case \"{p.Name.ToLowerInvariant()}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;");
@@ -133,7 +140,7 @@ default:
     break;
 }}";
 
-            var exact_match_cases = parameter_symbols.Except(new[] { catch_all_parameter }).Select(p => $"case \"{p.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;");
+            var exact_match_cases = parameter_symbols.Except(new[] { catch_all_parameter }).Select(p => $"case \"{p!.Name}\": this.{p.Name} = ({p.Type.ToDisplayString()}) value; break;");
             string exact_match_default;
             if (force_exact_match)
             {

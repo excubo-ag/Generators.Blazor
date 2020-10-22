@@ -25,7 +25,7 @@ namespace Testing.Positive
 ";
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
-            Assert.Equal(1, generated.Length);
+            Assert.Single(generated);
             Assert.True(generated.Any(g => g.Filename.EndsWith("GenerateSetParametersAsyncAttribute.cs")));
         }
     }

@@ -21,7 +21,7 @@ namespace Excubo.Generators.Blazor
         Click = 1
     }
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class GenerateEventsAttribute : Attribute
+    sealed class GenerateEventsAttribute : Attribute
     {
         public GenerateEventsAttribute(HtmlEvent events)
         {
@@ -56,22 +56,6 @@ namespace N.S
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
             Assert.Equal(2, generated.Length);
-            generated.ContainsFileWithContent("GenerateEventsAttribute.cs", @"
-using System;
-namespace Excubo.Generators.Blazor
-{
-    public enum HtmlEvent
-    {
-        Click = 1
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class GenerateEventsAttribute : Attribute
-    {
-        public GenerateEventsAttribute(HtmlEvent events)
-        {
-        }
-    }
-}");
             generated.ContainsFileWithContent("_parameters.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

@@ -143,3 +143,22 @@ By installing this nuget package, you get warnings when you forget to set `@key`
     </div>
 }
 ```
+
+## Experimental diagnostic: required parameters
+
+In some situations it's an advantage to be able to mark parameters as required. With this package you have two ways to say that:
+
+1. explicitly required
+
+```cs
+@code {
+    [Required][Parameter] public T Value { get; set; }
+}
+```
+
+2. all parameters are required
+
+```cs
+// either in your Component.razor or in _Imports.razor
+@attribute [Excubo.Generators.Blazor.ParametersAreRequiredByDefault]
+```

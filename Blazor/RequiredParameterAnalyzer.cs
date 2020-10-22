@@ -10,17 +10,24 @@ namespace Excubo.Generators.Blazor
     [Generator]
     public partial class RequiredParameterAnalyzer : ISourceGenerator
     {
-        private static readonly DiagnosticDescriptor MissingRequiredParameter = new DiagnosticDescriptor("BB0004", "Missing parameter assignment", "Component {0} requires assignment of parameter {1}", "Correctness", DiagnosticSeverity.Warning, isEnabledByDefault: true, description: "TODO");
+        private static readonly DiagnosticDescriptor MissingRequiredParameter = new DiagnosticDescriptor(
+            id: "BB0004",
+            title: "Missing parameter assignment",
+            messageFormat: "Component {0} requires assignment of parameter {1}",
+            category: "Correctness",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "A parameter marked as required may not be omitted when using the component.");
         private const string RequiredParameterAttributes = @"
 using System;
 namespace Excubo.Generators.Blazor
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    internal sealed class RequiredAttribute : Attribute
+    sealed class RequiredAttribute : Attribute
     {
     }
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    internal sealed class ParametersAreRequiredByDefaultAttribute : Attribute
+    sealed class ParametersAreRequiredByDefaultAttribute : Attribute
     {
     }
 }
@@ -29,7 +36,7 @@ namespace Excubo.Generators.Blazor
         {
             context.AddCode("RequiredParameterAttributes", RequiredParameterAttributes);
 
-            if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
+            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
                 return;
             }
@@ -47,19 +54,19 @@ namespace Excubo.Generators.Blazor
 
         private static void AnalyzeRenderTreeMethod(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements)
         {
-            var current_component = new Stack<(SyntaxNode SyntaxNode, INamedTypeSymbol Symbol, HashSet<string> AssignedParameters)>();
+            var current_component = new Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)>();
             AnalyzeStatements(context, statements, ref current_component);
         }
 
-        private static void AnalyzeStatements(GeneratorExecutionContext context,SyntaxList<StatementSyntax> statements, ref Stack<(SyntaxNode SyntaxNode, INamedTypeSymbol Symbol, HashSet<string> AssignedParameters)> current_components)
+        private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)> current_components)
         {
             foreach (var invokation in statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
             {
-                AnalyzeInvokation(context, ref current_components, invokation);
+                AnalyzeInvokation(context, invokation, ref current_components);
             }
         }
 
-        private static void AnalyzeInvokation(GeneratorExecutionContext context, ref Stack<(SyntaxNode SyntaxNode, INamedTypeSymbol Symbol, HashSet<string> AssignedParameters)> current_components, InvocationExpressionSyntax invokation)
+        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)> current_components)
         {
             if (invokation.Expression is MemberAccessExpressionSyntax maes)
             {
@@ -88,13 +95,13 @@ namespace Excubo.Generators.Blazor
                     var (node, component, assigned_parameters) = current_components.Peek();
                     if (component != null)
                     {
-                        Func<IPropertySymbol, bool> parameter_condition = component.GetAttributes().Any(a => a.AttributeClass.Name == "ParametersAreRequiredByDefault" || a.AttributeClass.Name == "ParametersAreRequiredByDefaultAttribute")
+                        Func<IPropertySymbol, bool> parameter_condition = component.GetAttributes().Any(a => a.AttributeClass!.Name == "ParametersAreRequiredByDefault" || a.AttributeClass.Name == "ParametersAreRequiredByDefaultAttribute")
                             ? (ps) => true
-                            : (ps) => ps.GetAttributes().Any(a => a.AttributeClass.Name == "Required" || a.AttributeClass.Name == "RequiredAttribute");
+                            : (ps) => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Required" || a.AttributeClass.Name == "RequiredAttribute");
                         var missing_parameters = component
                             .GetMembers()
                             .OfType<IPropertySymbol>()
-                            .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"))
+                            .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"))
                             .Where(parameter_condition)
                             .Select(ps => ps.Name)
                             .Except(assigned_parameters)
@@ -102,7 +109,7 @@ namespace Excubo.Generators.Blazor
 
                         foreach (var missing_parameter in missing_parameters)
                         {
-                            context.ReportDiagnostic(Diagnostic.Create(MissingRequiredParameter, node.GetLocation(), component.Name, missing_parameter));
+                            context.ReportDiagnostic(Diagnostic.Create(MissingRequiredParameter, node!.GetLocation(), component.Name, missing_parameter));
                         }
                     }
                     current_components.Pop();
@@ -123,14 +130,13 @@ namespace Excubo.Generators.Blazor
                         var name_argument = invokation.ArgumentList.Arguments[1];
                         if (name_argument.Expression is LiteralExpressionSyntax les)
                         {
-                            assigned_parameters.Add(les.Token.ValueText);
+                            assigned_parameters!.Add(les.Token.ValueText);
                         }
-                        else if (name_argument.Expression is InvocationExpressionSyntax nameof_ies
-                            && nameof_ies.Expression is IdentifierNameSyntax nameof_ins
-                            && nameof_ins.Identifier.ToString() == "nameof"
-                            && nameof_ies.ArgumentList.Arguments[0].Expression is MemberAccessExpressionSyntax nameof_maes)
+                        else if (name_argument.Expression is InvocationExpressionSyntax nameof_ies)
                         {
-                            assigned_parameters.Add(nameof_maes.Name.Identifier.ToString());
+                            var nameof_op = context.Compilation.GetSemanticModel(nameof_ies.SyntaxTree).GetOperation(nameof_ies);
+                            var nameof_result = nameof_op!.ConstantValue.Value as string;
+                            assigned_parameters!.Add(nameof_result!);
                         }
                     }
                 }
@@ -140,8 +146,8 @@ namespace Excubo.Generators.Blazor
                     var called_method = model.GetSymbolInfo(invokation);
                     if (called_method.Symbol != null && called_method.Symbol.Kind is SymbolKind.Method)
                     {
-                        var definition = (called_method.Symbol as IMethodSymbol).DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
-                        AnalyzeStatements(context, definition.Body.Statements, ref current_components);
+                        var definition = (called_method.Symbol as IMethodSymbol)!.DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
+                        AnalyzeStatements(context, definition!.Body!.Statements, ref current_components);
                     }
                 }
             }

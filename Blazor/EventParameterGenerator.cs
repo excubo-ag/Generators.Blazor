@@ -11,7 +11,14 @@ namespace Excubo.Generators.Blazor
     [Generator]
     public partial class EventParameterGenerator : ISourceGenerator
     {
-        private static readonly DiagnosticDescriptor EventNotUsed = new DiagnosticDescriptor("BB0002", "Event parameter not used", "Parameter names are case insensitive. {0} conflicts with {1}.", "Conflict", DiagnosticSeverity.Error, isEnabledByDefault: true, description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
+        private static readonly DiagnosticDescriptor EventNotUsed = new DiagnosticDescriptor(
+            id: "BB0002",
+            title: "Event parameter not used",
+            messageFormat: "Parameter names are case insensitive. {0} conflicts with {1}.", 
+            category: "Conflict", 
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
 
         private const string SetParametersAsyncAttributeText = @"
 using System;
@@ -42,7 +49,7 @@ namespace Excubo.Generators.Blazor
             // https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually
             context.AddCode("GenerateEventsAttribute", SetParametersAsyncAttributeText);
 
-            if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
+            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
             {
                 return;
             }
@@ -61,7 +68,7 @@ namespace Excubo.Generators.Blazor
             var type_kind = class_symbol.TypeKind switch { TypeKind.Class => "class", TypeKind.Interface => "interface", _ => "struct" };
             var type_parameters = string.Join(", ", class_symbol.TypeArguments.Select(t => t.Name));
             type_parameters = string.IsNullOrEmpty(type_parameters) ? type_parameters : "<" + type_parameters + ">";
-            var attrs = class_symbol.GetAttributes().Where(a => a.AttributeClass.Name == "GenerateEvents" || a.AttributeClass.Name == "GenerateEventsAttribute").ToList();
+            var attrs = class_symbol.GetAttributes().Where(a => a.AttributeClass!.Name == "GenerateEvents" || a.AttributeClass.Name == "GenerateEventsAttribute").ToList();
             var value = attrs[0].ConstructorArguments[0].Value;
             var event_name = "Click";
             context.AddCode(class_symbol.ToDisplayString() + "_parameters.cs", $@"
@@ -76,8 +83,8 @@ namespace {namespaceName}
     }}
 }}");
             var buildRenderTreeMethod = class_symbol.GetMembers().FirstOrDefault(m => m.Name == "BuildRenderTree");
-            var buildRenderTreeMethodBody = ((buildRenderTreeMethod as IMethodSymbol).DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax).Body;
-            foreach (var statement in buildRenderTreeMethodBody.Statements.OfType<ExpressionStatementSyntax>())
+            var buildRenderTreeMethodBody = ((buildRenderTreeMethod as IMethodSymbol)!.DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax)!.Body;
+            foreach (var statement in buildRenderTreeMethodBody!.Statements.OfType<ExpressionStatementSyntax>())
             {
                 if (statement.Expression is InvocationExpressionSyntax ies && ies.Expression is MemberAccessExpressionSyntax maes && maes.Name.ToString() == "AddAttribute")
                 {
