@@ -34,13 +34,27 @@ namespace Excubo.Generators.Blazor
             }
 
             var compilation = context.Compilation;
-            foreach (var method in receiver.CandidateMethods.Where(m => m.Body != null))
+            try
             {
-                AnalyzeRenderTreeMethod(context, method.Body!.Statements);
+                foreach (var method in receiver.CandidateMethods.Where(m => m.Body != null))
+                {
+                    AnalyzeRenderTreeMethod(context, method.Body!.Statements);
+                }
             }
-            foreach (var lambda in receiver.CandidateLambdas)
+            catch (Exception e)
             {
-                AnalyzeRenderTreeMethod(context, (lambda.Body as BlockSyntax)!.Statements);
+                context.ReportDiagnostic(Diagnostic.Create(FatalError, null, nameof(RequiredParameterAnalyzer), "a method", e.StackTrace));
+            }
+            try
+            {
+                foreach (var lambda in receiver.CandidateLambdas)
+                {
+                    AnalyzeRenderTreeMethod(context, (lambda.Body as BlockSyntax)!.Statements);
+                }
+            }
+            catch (Exception e)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(FatalError, null, nameof(RequiredParameterAnalyzer), "a lambda", e.StackTrace));
             }
         }
 
@@ -84,29 +98,36 @@ namespace Excubo.Generators.Blazor
                 }
                 else if (maes.Name.ToString() == "CloseComponent")
                 {
-                    var (node, component, assigned_parameters) = current_components.Peek();
-                    if (component != null)
-                    {
-                        Func<IPropertySymbol, bool> parameter_condition = component.GetAttributes().Any(a => a.AttributeClass!.Name == "ParametersAreRequiredByDefault" || a.AttributeClass.Name == "ParametersAreRequiredByDefaultAttribute")
-                            ? (ps) => true
-                            : (ps) => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Required" || a.AttributeClass.Name == "RequiredAttribute");
-                        var missing_parameters = component
-                            .GetMembers()
-                            .OfType<IPropertySymbol>()
-                            .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"))
-                            .Where(parameter_condition)
-                            .Select(ps => ps.Name)
-                            .Except(assigned_parameters)
-                            .ToList();
-
-                        foreach (var missing_parameter in missing_parameters)
-                        {
-                            context.ReportDiagnostic(Diagnostic.Create(MissingRequiredParameter, node!.GetLocation(), component.Name, missing_parameter));
-                        }
-                    }
                     try
                     {
-                        current_components.Pop();
+                        var (node, component, assigned_parameters) = current_components.Peek();
+                        if (component != null)
+                        {
+                            Func<IPropertySymbol, bool> parameter_condition = component.GetAttributes().Any(a => a.AttributeClass!.Name == "ParametersAreRequiredByDefault" || a.AttributeClass.Name == "ParametersAreRequiredByDefaultAttribute")
+                                ? (ps) => true
+                                : (ps) => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Required" || a.AttributeClass.Name == "RequiredAttribute");
+                            var missing_parameters = component
+                                .GetMembers()
+                                .OfType<IPropertySymbol>()
+                                .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"))
+                                .Where(parameter_condition)
+                                .Select(ps => ps.Name)
+                                .Except(assigned_parameters)
+                                .ToList();
+
+                            foreach (var missing_parameter in missing_parameters)
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(MissingRequiredParameter, node!.GetLocation(), component.Name, missing_parameter));
+                            }
+                        }
+                        try
+                        {
+                            current_components.Pop();
+                        }
+                        catch (Exception e)
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(FatalError, invokation.GetLocation(), nameof(RequiredParameterAnalyzer), invokation.ToString(), "stack peek for CloseComponent"));
+                        }
                     }
                     catch (Exception e)
                     {
@@ -130,20 +151,27 @@ namespace Excubo.Generators.Blazor
                 }
                 else if (maes.Name.ToString() == "AddAttribute")
                 {
-                    var (node, component, assigned_parameters) = current_components.Peek();
-                    if (component != null && invokation.ArgumentList.Arguments.Count >= 2)
+                    try
                     {
-                        var name_argument = invokation.ArgumentList.Arguments[1];
-                        if (name_argument.Expression is LiteralExpressionSyntax les)
+                        var (node, component, assigned_parameters) = current_components.Peek();
+                        if (component != null && invokation.ArgumentList.Arguments.Count >= 2)
                         {
-                            assigned_parameters!.Add(les.Token.ValueText);
+                            var name_argument = invokation.ArgumentList.Arguments[1];
+                            if (name_argument.Expression is LiteralExpressionSyntax les)
+                            {
+                                assigned_parameters!.Add(les.Token.ValueText);
+                            }
+                            else if (name_argument.Expression is InvocationExpressionSyntax nameof_ies)
+                            {
+                                var nameof_op = context.Compilation.GetSemanticModel(nameof_ies.SyntaxTree).GetOperation(nameof_ies);
+                                var nameof_result = nameof_op!.ConstantValue.Value as string;
+                                assigned_parameters!.Add(nameof_result!);
+                            }
                         }
-                        else if (name_argument.Expression is InvocationExpressionSyntax nameof_ies)
-                        {
-                            var nameof_op = context.Compilation.GetSemanticModel(nameof_ies.SyntaxTree).GetOperation(nameof_ies);
-                            var nameof_result = nameof_op!.ConstantValue.Value as string;
-                            assigned_parameters!.Add(nameof_result!);
-                        }
+                    }
+                    catch (Exception e)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(FatalError, invokation.GetLocation(), nameof(RequiredParameterAnalyzer), invokation.ToString(), "stack peek for AddAttribute"));
                     }
                 }
                 else if (invokation.ArgumentList.Arguments.Any(a => a.Expression is IdentifierNameSyntax ins && ins.Identifier.ToString().Contains("builder")))
