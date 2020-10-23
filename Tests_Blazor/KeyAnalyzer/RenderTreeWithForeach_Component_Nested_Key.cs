@@ -21,7 +21,7 @@ public class Bar
             foreach (var element in items)
             {
                 builder2.OpenComponent<TComponent>(2);
-                builder2.SetKey(3, ""foo"");
+                builder2.SetKey(element);
                 builder2.CloseComponent();
             }
         }

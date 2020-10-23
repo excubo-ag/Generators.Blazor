@@ -3,28 +3,24 @@ using Xunit;
 
 namespace Tests_Blazor
 {
-    public partial class KeyAnalyzerTests
+    public partial class RequiredParameterAnalyzerTests
     {
         [Fact]
-        public void RenderTreeWithForeach_Component_Key()
+        public void NoRequired()
         {
             var userSource = @"
 namespace Foo
 {
-public class Bar
-{
-    public void BuildRenderTree(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+    public class Bar
     {
-        foreach (var element in items)
+        public void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.OpenComponent<TComponent>(0);
-            builder.SetKey(element);
+            builder.OpenComponent<Bar>(0);
             builder.CloseComponent();
         }
+        [Parameter] public object Value { get; set; }
     }
-}
-}
-";
+}";
             RunGenerator(userSource, out var generatorDiagnostics, out _);
             generatorDiagnostics.Verify();
         }

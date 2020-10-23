@@ -22,10 +22,10 @@ public class Bar
     }
     internal static class TypeInference
     {
-        public static void CreateListItem_0<T>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq)
+        public static void CreateListItem_0<T>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, T element)
         {
             __builder.OpenComponent<global::Excubo.Blazor.TreeViews.__Internal.ListItem<T>>(seq);
-            __builder.SetKey(1, ""foo"");
+            __builder.SetKey(element);
             __builder.CloseComponent();
         }
     }

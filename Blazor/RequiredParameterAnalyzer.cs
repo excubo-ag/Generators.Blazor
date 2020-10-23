@@ -18,6 +18,14 @@ namespace Excubo.Generators.Blazor
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "A parameter marked as required may not be omitted when using the component.");
+        private static readonly DiagnosticDescriptor FatalError = new DiagnosticDescriptor(
+            id: "BB9999",
+            title: "Fatal error",
+            messageFormat: "{0} encountered an error while processing {1}. We know from context it has something to do with {2}. Please consider reporting this as an issue.",
+            category: "Build",
+            defaultSeverity: DiagnosticSeverity.Info,
+            isEnabledByDefault: true,
+            description: "No software is perfect...");
         public void Execute(GeneratorExecutionContext context)
         {
             if (context.SyntaxReceiver is not SyntaxReceiver receiver)
@@ -44,7 +52,7 @@ namespace Excubo.Generators.Blazor
 
         private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)> current_components)
         {
-            foreach (var invokation in statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
+            foreach (var invokation in statements.SelectMany(s => s.RecurseExpressions()).Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
             {
                 AnalyzeInvokation(context, invokation, ref current_components);
             }
@@ -96,7 +104,14 @@ namespace Excubo.Generators.Blazor
                             context.ReportDiagnostic(Diagnostic.Create(MissingRequiredParameter, node!.GetLocation(), component.Name, missing_parameter));
                         }
                     }
-                    current_components.Pop();
+                    try
+                    {
+                        current_components.Pop();
+                    }
+                    catch (Exception e)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(FatalError, invokation.GetLocation(), nameof(RequiredParameterAnalyzer), invokation.ToString(), "stack pop for CloseComponent"));
+                    }
                 }
                 else if (maes.Name.ToString().StartsWith("OpenElement"))
                 {
@@ -104,12 +119,19 @@ namespace Excubo.Generators.Blazor
                 }
                 else if (maes.Name.ToString() == "CloseElement")
                 {
-                    current_components.Pop();
+                    try
+                    {
+                        current_components.Pop();
+                    }
+                    catch (Exception e)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(FatalError, invokation.GetLocation(), nameof(RequiredParameterAnalyzer), invokation.ToString(), "stack pop for CloseElement"));
+                    }
                 }
                 else if (maes.Name.ToString() == "AddAttribute")
                 {
                     var (node, component, assigned_parameters) = current_components.Peek();
-                    if (component != null)
+                    if (component != null && invokation.ArgumentList.Arguments.Count >= 2)
                     {
                         var name_argument = invokation.ArgumentList.Arguments[1];
                         if (name_argument.Expression is LiteralExpressionSyntax les)
@@ -130,8 +152,17 @@ namespace Excubo.Generators.Blazor
                     var called_method = model.GetSymbolInfo(invokation);
                     if (called_method.Symbol != null && called_method.Symbol.Kind is SymbolKind.Method)
                     {
-                        var definition = (called_method.Symbol as IMethodSymbol)!.DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
-                        AnalyzeStatements(context, definition!.Body!.Statements, ref current_components);
+                        if (called_method.Symbol is IMethodSymbol ims)
+                        {
+                            var syntax_reference = ims.DeclaringSyntaxReferences.FirstOrDefault();
+                            if (syntax_reference != null)
+                            {
+                                if (syntax_reference.GetSyntax() is MethodDeclarationSyntax definition)
+                                {
+                                    AnalyzeStatements(context, definition!.Body!.Statements, ref current_components);
+                                }
+                            }
+                        }
                     }
                 }
             }

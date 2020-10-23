@@ -18,7 +18,7 @@ public class Bar
         foreach (var element in items)
         {
             builder.OpenElement(0, ""div"");
-            builder.SetKey(1, ""foo"");
+            builder.SetKey(element);
             builder.CloseElement();
         }
     }

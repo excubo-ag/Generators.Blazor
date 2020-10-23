@@ -6,6 +6,26 @@ using System.Linq;
 
 namespace Excubo.Generators.Blazor
 {
+    internal static class StatementSyntaxExtension
+    {
+        internal static IEnumerable<ExpressionStatementSyntax> RecurseExpressions(this StatementSyntax syntax)
+        {
+            if (syntax is ExpressionStatementSyntax ess)
+            {
+                yield return ess;
+            }
+            else
+            {
+                foreach (var child in syntax.ChildNodes().OfType<StatementSyntax>())
+                {
+                    foreach (var result in RecurseExpressions(child))
+                    {
+                        yield return result;
+                    }
+                }
+            }
+        }
+    }
     [Generator]
     public partial class KeyAnalyzer : ISourceGenerator
     {
@@ -17,6 +37,14 @@ namespace Excubo.Generators.Blazor
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "Not using a @key within a for-loop or foreach-loop in Blazor not only can have a negative performance impact, but also cause problems with disposable components.");
+        private static readonly DiagnosticDescriptor ConstantKey = new DiagnosticDescriptor(
+            id: "BB0005",
+            title: "key should not be a constant",
+            messageFormat: "A key must be unique per loop iteration. Did you mean @{0} instead of {0}?",
+            category: "Correctness",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "A key must be unique per loop iteration. Therefore, it cannot be a constant expression.");
 
         public void Execute(GeneratorExecutionContext context)
         {
@@ -58,7 +86,7 @@ namespace Excubo.Generators.Blazor
 
         private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxToken? for_keyword, SyntaxList<StatementSyntax> statements, ref int level, ref bool saw_key)
         {
-            foreach (var invokation in statements.OfType<ExpressionStatementSyntax>().Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
+            foreach (var invokation in statements.SelectMany(s => s.RecurseExpressions()).Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
             {
                 AnalyzeInvokation(context, for_keyword, ref level, ref saw_key, invokation);
             }
@@ -87,17 +115,29 @@ namespace Excubo.Generators.Blazor
                 }
                 else if (level == 0 && maes.Name.ToString() == "SetKey")
                 {
+                    if (invokation.ArgumentList.Arguments.Any() && invokation.ArgumentList.Arguments[0].Expression is LiteralExpressionSyntax les)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(ConstantKey, invokation.ArgumentList.Arguments[0].GetLocation(), les.Token.ValueText));
+                    }
                     saw_key = true;
                 }
                 else if (invokation.ArgumentList.Arguments.Any(a => a.Expression is IdentifierNameSyntax ins && ins.Identifier.ToString().Contains("builder")))
                 {
-                    // TODO go to that methods body and pretend we're still in this context
                     var model = context.Compilation.GetSemanticModel(invokation.SyntaxTree);
                     var called_method = model.GetSymbolInfo(invokation);
                     if (called_method.Symbol != null && called_method.Symbol.Kind is SymbolKind.Method)
                     {
-                        var definition = (called_method.Symbol as IMethodSymbol)!.DeclaringSyntaxReferences[0].GetSyntax() as MethodDeclarationSyntax;
-                        AnalyzeStatements(context, for_keyword, definition!.Body!.Statements, ref level, ref saw_key);
+                        if (called_method.Symbol is IMethodSymbol ims)
+                        {
+                            var syntax_reference = ims.DeclaringSyntaxReferences.FirstOrDefault();
+                            if (syntax_reference != null)
+                            {
+                                if (syntax_reference.GetSyntax() is MethodDeclarationSyntax definition)
+                                {
+                                    AnalyzeStatements(context, for_keyword, definition!.Body!.Statements, ref level, ref saw_key);
+                                }
+                            }
+                        }
                     }
                 }
             }
