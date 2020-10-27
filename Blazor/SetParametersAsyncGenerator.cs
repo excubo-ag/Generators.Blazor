@@ -111,13 +111,14 @@ namespace {namespaceName}
 default:
 {{
     this.{catch_all_parameter.Name} ??= new System.Collections.Generic.Dictionary<string, object>();
-    if (!this.{catch_all_parameter.Name}.ContainsKey(name))
+    var writable_dict = this.{catch_all_parameter.Name} as System.Collections.Generic.Dictionary<string, object>;
+    if (!writable_dict.ContainsKey(name))
     {{
-        this.{catch_all_parameter.Name}.Add(name, value);
+        writable_dict.Add(name, value);
     }}
     else
     {{
-        this.{catch_all_parameter.Name}[name] = value;
+        writable_dict[name] = value;
     }}
     break;
 }}";

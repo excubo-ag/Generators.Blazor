@@ -10,9 +10,10 @@ namespace IntegrationTest
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            foreach (var element in Enumerable.Empty<string>())
+            foreach (var element in Enumerable.Range(0, 1))
             {
                 builder.OpenElement(0, "div");
+                builder.AddMultipleAttributes(1, Additional);
                 builder.CloseElement();
             }
         }
@@ -21,6 +22,6 @@ namespace IntegrationTest
             BlazorImplementation__WriteSingleParameter(null, null);
         }
         [Parameter] public string Parameter1 { get; set; }
-        [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Additional { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> Additional { get; set; }
     }
 }
