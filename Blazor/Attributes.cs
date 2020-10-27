@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Excubo.Generators.Blazor
 {
-    public enum HtmlEvent
+    public class ExperimentalDoNotUseYet
     {
-        Click = 1
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class GenerateEventsAttribute : Attribute
-    {
-        public GenerateEventsAttribute(HtmlEvent events)
+        public enum HtmlEvent
         {
+            Click = 1
+        }
+        [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+        public sealed class GenerateEventsAttribute : Attribute
+        {
+            public GenerateEventsAttribute(HtmlEvent events)
+            {
+            }
         }
     }
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
