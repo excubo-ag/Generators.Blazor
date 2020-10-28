@@ -74,8 +74,10 @@ namespace {namespaceName}
 #pragma warning restore CS8632
 #pragma warning restore CS0162
 ");
-            var type_with_bases = class_symbol.GetTypeHierarchy();
-            var members = type_with_bases.SelectMany(t => t.GetMembers());
+            var bases = class_symbol.GetTypeHierarchy().Where(t => !SymbolEqualityComparer.Default.Equals(t, class_symbol));
+            var members = class_symbol.GetMembers() // members of the type itself
+                .Concat(bases.SelectMany(t => t.GetMembers().Where(m => m.DeclaredAccessibility != Accessibility.Private))) // plus accessible members of any base
+                .Distinct(SymbolEqualityComparer.Default);
             var property_symbols = members.OfType<IPropertySymbol>();
             var writable_property_symbols = property_symbols.Where(ps => !ps.IsReadOnly);
             var parameter_symbols = writable_property_symbols

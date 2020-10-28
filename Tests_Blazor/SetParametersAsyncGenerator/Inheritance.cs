@@ -25,6 +25,7 @@ namespace Testing.Positive.Inheritance
          [Parameter] public string Parameter1 { get; set; }
          [Parameter] public System.Object Parameter2 { get; set; }
          [CascadingParameter] public GenerateSetParametersAsyncAttribute Parameter3 { get; set; }
+         [CascadingParameter] private object Foo { get; set; }
     }
 }
 ";
