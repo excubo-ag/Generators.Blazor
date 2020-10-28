@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace Excubo.Generators.Blazor
+namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
 {
-    public class ExperimentalDoNotUseYet
+    public enum HtmlEvent
     {
-        public enum HtmlEvent
+        Click = 1
+    }
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    public sealed class GenerateEventsAttribute : Attribute
+    {
+        public GenerateEventsAttribute(HtmlEvent events)
         {
-            Click = 1
-        }
-        [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-        public sealed class GenerateEventsAttribute : Attribute
-        {
-            public GenerateEventsAttribute(HtmlEvent events)
-            {
-            }
         }
     }
+}
+namespace Excubo.Generators.Blazor
+{
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public sealed class RequiredAttribute : Attribute
     {

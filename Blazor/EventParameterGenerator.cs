@@ -85,7 +85,7 @@ namespace {namespaceName}
         /// <returns></returns>
         private static IEnumerable<INamedTypeSymbol> GetCandidateClasses(SyntaxReceiver receiver, Compilation compilation)
         {
-            var positiveAttributeSymbol = compilation.GetTypeByMetadataName("Excubo.Generators.Blazor.GenerateEventsAttribute");
+            var positiveAttributeSymbol = compilation.GetTypeByMetadataName("Excubo.Generators.Blazor.ExperimentalDoNotUseYet.GenerateEventsAttribute");
 
             // loop over the candidate methods, and keep the ones that are actually annotated
             foreach (var class_declaration in receiver.CandidateClasses)

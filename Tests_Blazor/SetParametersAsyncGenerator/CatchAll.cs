@@ -111,13 +111,14 @@ namespace Testing.Positive
                         default:
                             {
                                 this.Parameter3 ??= new System.Collections.Generic.Dictionary<string, object>();
-                                if (!this.Parameter3.ContainsKey(name))
+                                var writable_dict = this.Parameter3 as System.Collections.Generic.Dictionary<string, object>;
+                                if (!writable_dict.ContainsKey(name))
                                 {
-                                    this.Parameter3.Add(name, value);
+                                    writable_dict.Add(name, value);
                                 }
                                 else
                                 {
-                                    this.Parameter3[name] = value;
+                                    writable_dict[name] = value;
                                 }
                                 break;
                             }
