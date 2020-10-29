@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,6 +15,7 @@ namespace IntegrationTest
             {
                 builder.OpenElement(0, "div");
                 builder.AddMultipleAttributes(1, Additional);
+                builder.AddEventPreventDefaultAttribute(2, "onclick", true);
                 builder.CloseElement();
             }
         }
