@@ -18,6 +18,14 @@ namespace Excubo.Generators.Blazor
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "A parameter marked as required may not be omitted when using the component.");
+        private static readonly DiagnosticDescriptor ParameterTooMuch = new DiagnosticDescriptor(
+            id: "BB0008",
+            title: "Unmatched parameter assignment",
+            messageFormat: "Component {0} does not have a parameter called {1}",
+            category: "Correctness",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "When a component does not define a parameter and also no CaptureUnmatched parameter, then using anything but the parameters will result in failure.");
         private static readonly DiagnosticDescriptor FatalError = new DiagnosticDescriptor(
             id: "BB9999",
             title: "Fatal error",
@@ -60,11 +68,11 @@ namespace Excubo.Generators.Blazor
 
         private static void AnalyzeRenderTreeMethod(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements)
         {
-            var current_component = new Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)>();
+            var current_component = new Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, Dictionary<string, InvocationExpressionSyntax>? AssignedParameters)>();
             AnalyzeStatements(context, statements, ref current_component);
         }
 
-        private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)> current_components)
+        private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, Dictionary<string, InvocationExpressionSyntax>? AssignedParameters)> current_components)
         {
             foreach (var invokation in statements.SelectMany(s => s.RecurseExpressions()).Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
             {
@@ -72,7 +80,7 @@ namespace Excubo.Generators.Blazor
             }
         }
 
-        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, HashSet<string>? AssignedParameters)> current_components)
+        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, ref Stack<(SyntaxNode? SyntaxNode, INamedTypeSymbol? Symbol, Dictionary<string, InvocationExpressionSyntax>? AssignedParameters)> current_components)
         {
             if (invokation.Expression is MemberAccessExpressionSyntax maes)
             {
@@ -84,7 +92,7 @@ namespace Excubo.Generators.Blazor
                         var comp = context.Compilation.GetSemanticModel(type_arg.SyntaxTree).GetSymbolInfo(type_arg);
                         if (comp.Symbol is INamedTypeSymbol comp_symbol)
                         {
-                            current_components.Push((invokation, comp_symbol, new HashSet<string>()));
+                            current_components.Push((invokation, comp_symbol, new Dictionary<string, InvocationExpressionSyntax>()));
                         }
                         else
                         {
@@ -106,18 +114,32 @@ namespace Excubo.Generators.Blazor
                             Func<IPropertySymbol, bool> parameter_condition = component.GetAttributes().Any(a => a.AttributeClass!.Name == "ParametersAreRequiredByDefault" || a.AttributeClass.Name == "ParametersAreRequiredByDefaultAttribute")
                                 ? (ps) => true
                                 : (ps) => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Required" || a.AttributeClass.Name == "RequiredAttribute");
-                            var missing_parameters = component
+                            var component_params = component
                                 .GetMembers()
                                 .OfType<IPropertySymbol>()
                                 .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"))
-                                .Where(parameter_condition)
-                                .Select(ps => ps.Name)
-                                .Except(assigned_parameters)
                                 .ToList();
-
+                            var catch_all_parameter = component_params.FirstOrDefault(p =>
+                            {
+                                var parameter_attr = p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Name.StartsWith("Parameter"));
+                                return parameter_attr != null && parameter_attr.NamedArguments.Any(n => n.Key == "CaptureUnmatchedValues" && n.Value.Value is bool v && v);
+                            });
+                            var missing_parameters = component_params.Where(p => p != catch_all_parameter).Where(parameter_condition).Select(ps => ps.Name).Except(assigned_parameters.Keys);
                             foreach (var missing_parameter in missing_parameters)
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(MissingRequiredParameter, node!.GetLocation(), component.Name, missing_parameter));
+                            }
+                            if (catch_all_parameter == null)
+                            {
+                                foreach (var kv in assigned_parameters)
+                                {
+                                    var name = kv.Key;
+                                    var p = kv.Value;
+                                    if (!component_params.Select(ps => ps.Name).Contains(name))
+                                    {
+                                        context.ReportDiagnostic(Diagnostic.Create(ParameterTooMuch, p!.GetLocation(), component.Name, name));
+                                    }
+                                }
                             }
                         }
                         try
@@ -159,13 +181,13 @@ namespace Excubo.Generators.Blazor
                             var name_argument = invokation.ArgumentList.Arguments[1];
                             if (name_argument.Expression is LiteralExpressionSyntax les)
                             {
-                                assigned_parameters!.Add(les.Token.ValueText);
+                                assigned_parameters!.Add(les.Token.ValueText, invokation);
                             }
                             else if (name_argument.Expression is InvocationExpressionSyntax nameof_ies)
                             {
                                 var nameof_op = context.Compilation.GetSemanticModel(nameof_ies.SyntaxTree).GetOperation(nameof_ies);
                                 var nameof_result = nameof_op!.ConstantValue.Value as string;
-                                assigned_parameters!.Add(nameof_result!);
+                                assigned_parameters!.Add(nameof_result!, invokation);
                             }
                         }
                     }

@@ -3,4 +3,6 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-BB0002 | Conflict | Error | EventParameterGenerator
+BB0002 | Missing | Warning | EventParameterGenerator
+BB0006 | Missing | Warning | EventParameterGenerator
+BB0007 | Missing | Warning | EventParameterGenerator

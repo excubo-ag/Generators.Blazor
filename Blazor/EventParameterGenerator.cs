@@ -13,7 +13,7 @@ namespace Excubo.Generators.Blazor
             id: "BB0002",
             title: "Event parameter not used",
             messageFormat: "Event {0} is a parameter, but is not used in markup",
-            category: "Conflict",
+            category: "Missing",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "TODO");
@@ -21,7 +21,7 @@ namespace Excubo.Generators.Blazor
             id: "BB0006",
             title: "EventStopPropagation parameter not used",
             messageFormat: "{0}StopPropagation is a parameter for an event, but is not used in markup",
-            category: "Conflict",
+            category: "Missing",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "TODO");
@@ -29,7 +29,7 @@ namespace Excubo.Generators.Blazor
             id: "BB0007",
             title: "EventPreventDefault parameter not used",
             messageFormat: "{0}PreventDefault is a parameter for an event, but is not used in markup",
-            category: "Conflict",
+            category: "Missing",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "TODO");
