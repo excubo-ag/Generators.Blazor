@@ -114,8 +114,11 @@ namespace Excubo.Generators.Blazor
                             Func<IPropertySymbol, bool> parameter_condition = component.GetAttributes().Any(a => a.AttributeClass!.Name == "ParametersAreRequiredByDefault" || a.AttributeClass.Name == "ParametersAreRequiredByDefaultAttribute")
                                 ? (ps) => true
                                 : (ps) => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Required" || a.AttributeClass.Name == "RequiredAttribute");
-                            var component_params = component
-                                .GetMembers()
+                            var bases = component.GetTypeHierarchy().Where(t => !SymbolEqualityComparer.Default.Equals(t, component));
+                            var members = component.GetMembers() // members of the type itself
+                                .Concat(bases.SelectMany(t => t.GetMembers().Where(m => m.DeclaredAccessibility != Accessibility.Private))) // plus accessible members of any base
+                                .Distinct(SymbolEqualityComparer.Default);
+                            var component_params = members
                                 .OfType<IPropertySymbol>()
                                 .Where(ps => ps.GetAttributes().Any(a => a.AttributeClass!.Name == "Parameter" || a.AttributeClass.Name == "ParameterAttribute"))
                                 .ToList();
