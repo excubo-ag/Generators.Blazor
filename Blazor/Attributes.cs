@@ -164,7 +164,7 @@ namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
 }
 namespace Excubo.Generators.Blazor
 {
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
     public sealed class RequiredAttribute : Attribute
     {
     }
