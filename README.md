@@ -39,7 +39,7 @@ Your project needs to use C# 9.0, therefore `<LangVersion>latest</LangVersion>` 
 
 Blazor uses C#-Reflection to handle the setting of component's `[Parameter]`s which is slower than a compile-time approach.
 The `SetParametersAsync` generator overrides the default reflection-based implementation of `Task SetParametersAsync(ParameterView parameters)` following this 
-[recommendation by MS](https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually).
+[recommendation by MS](https://github.com/dotnet/AspNetCore.Docs/blob/master/aspnetcore/blazor/webassembly-performance-best-practices.md).
 
 This increases the performance of setting parameters of components up to 6x.
 
