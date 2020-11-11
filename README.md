@@ -36,9 +36,7 @@ Your project needs to use `<LangVersion>preview</LangVersion>`, e.g.
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;net5.0</TargetFrameworks>
 		<LangVersion>preview</LangVersion>
-		<RazorLangVersion>3.0</RazorLangVersion>
 	</PropertyGroup>
     <!-- .... -->
 </Project>
