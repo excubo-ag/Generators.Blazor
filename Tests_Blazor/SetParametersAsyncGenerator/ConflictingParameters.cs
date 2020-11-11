@@ -28,7 +28,7 @@ namespace Testing.ConflictingParameters
                 new DiagnosticResult("BB0001", "Parameter", Microsoft.CodeAnalysis.DiagnosticSeverity.Error).WithLocation(10, 36),
                 new DiagnosticResult("BB0001", "parameter", Microsoft.CodeAnalysis.DiagnosticSeverity.Error).WithLocation(11, 43));
             Assert.Equal(2, generated.Length);
-            
+
             generated.ContainsFileWithContent("Testing.ConflictingParameters.Component_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

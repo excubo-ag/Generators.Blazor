@@ -27,7 +27,7 @@ namespace Testing.Positive
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
             Assert.Equal(2, generated.Length);
-            
+
             generated.ContainsFileWithContent("Testing.Positive.Component_T__override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

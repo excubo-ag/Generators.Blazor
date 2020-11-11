@@ -32,7 +32,7 @@ namespace Testing.Positive.Inheritance
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
             Assert.Equal(2, generated.Length);
-            
+
             generated.ContainsFileWithContent("Testing.Positive.Inheritance.Component_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

@@ -112,7 +112,7 @@ namespace Excubo.Generators.Blazor
                 // binary decompose
                 foreach (var enum_value in category.GetMembers().OfType<IFieldSymbol>())
                 {
-                    var constant_value = (int) enum_value.ConstantValue;
+                    var constant_value = (int)enum_value.ConstantValue;
                     var name = enum_value.Name;
                     if ((values & constant_value) == constant_value)
                     {

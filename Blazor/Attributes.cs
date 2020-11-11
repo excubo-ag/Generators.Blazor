@@ -36,39 +36,39 @@ namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
         onfullscreenchange = 1 << 4,
         onfullscreenerror = 1 << 5,
         onloadeddata = 1 << 6,
-        onloadedmetadata = 1 << 7, 
+        onloadedmetadata = 1 << 7,
         onpointerlockchange = 1 << 8,
-        onpointerlockerror = 1 << 9, 
-        onreadystatechange = 1 << 10, 
+        onpointerlockerror = 1 << 9,
+        onreadystatechange = 1 << 10,
         onscroll = 1 << 11,
         all = -1
     }
     public enum Input
     {
         oninvalid = 1 << 0,
-        onreset = 1 << 1, 
+        onreset = 1 << 1,
         onselect = 1 << 2,
         onselectionchange = 1 << 3,
         onselectstart = 1 << 4,
         onsubmit = 1 << 5,
-        onchange = 1 << 6, 
+        onchange = 1 << 6,
         oninput = 1 << 7,
         all = -1
     }
     public enum Media
     {
-        oncanplay = 1 << 0, 
-        oncanplaythrough = 1 << 1, 
-        oncuechange = 1 << 2, 
+        oncanplay = 1 << 0,
+        oncanplaythrough = 1 << 1,
+        oncuechange = 1 << 2,
         ondurationchange = 1 << 3,
-        onemptied = 1 << 4, 
-        onended = 1 << 5, 
+        onemptied = 1 << 4,
+        onended = 1 << 5,
         onpause = 1 << 6,
-        onplay = 1 << 7, 
-        onplaying = 1 << 8, 
+        onplay = 1 << 7,
+        onplaying = 1 << 8,
         onratechange = 1 << 9,
         onseeked = 1 << 10,
-        onseeking = 1 << 11, 
+        onseeking = 1 << 11,
         onstalled = 1 << 12,
         onstop = 1 << 13,
         onsuspend = 1 << 14,
@@ -80,15 +80,15 @@ namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
     public enum Focus
     {
         onfocus = 1 << 0,
-        onblur = 1 << 1, 
+        onblur = 1 << 1,
         onfocusin = 1 << 2,
         onfocusout = 1 << 3,
         all = -1
     }
     public enum Keyboard
     {
-        onkeydown = 1 << 0, 
-        onkeypress = 1 << 1, 
+        onkeydown = 1 << 0,
+        onkeypress = 1 << 1,
         onkeyup = 1 << 2,
         all = -1
     }
@@ -96,41 +96,41 @@ namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
     {
         onclick = 1 << 0,
         oncontextmenu = 1 << 1,
-        ondblclick = 1 << 2, 
-        onmousedown = 1 << 3, 
-        onmouseup = 1 << 4, 
-        onmouseover = 1 << 5, 
-        onmousemove = 1 << 6, 
+        ondblclick = 1 << 2,
+        onmousedown = 1 << 3,
+        onmouseup = 1 << 4,
+        onmouseover = 1 << 5,
+        onmousemove = 1 << 6,
         onmouseout = 1 << 7,
         all = -1
     }
     public enum Pointer
     {
-        onpointerdown = 1 << 0, 
-        onpointerup = 1 << 1, 
+        onpointerdown = 1 << 0,
+        onpointerup = 1 << 1,
         onpointercancel = 1 << 2,
-        onpointermove = 1 << 3, 
-        onpointerover = 1 << 4, 
-        onpointerout = 1 << 5, 
+        onpointermove = 1 << 3,
+        onpointerover = 1 << 4,
+        onpointerout = 1 << 5,
         onpointerenter = 1 << 6,
-        onpointerleave = 1 << 7, 
-        ongotpointercapture = 1 << 8, 
+        onpointerleave = 1 << 7,
+        ongotpointercapture = 1 << 8,
         onlostpointercapture = 1 << 9,
         all = -1
     }
     public enum Wheel
     {
-        onwheel = 1 << 0, 
+        onwheel = 1 << 0,
         onmousewheel = 1 << 1,
         all = -1
     }
     public enum Progress
     {
-        onabort = 1 << 0, 
-        onload = 1 << 1, 
+        onabort = 1 << 0,
+        onload = 1 << 1,
         onloadend = 1 << 2,
         onloadstart = 1 << 3,
-        onprogress = 1 << 4, 
+        onprogress = 1 << 4,
         ontimeout = 1 << 5,
         all = -1
     }

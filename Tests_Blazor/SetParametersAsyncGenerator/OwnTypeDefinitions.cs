@@ -127,7 +127,7 @@ namespace IntegrationConsoleTest
             RunGenerator(userSource, out var generatorDiagnostics, out var generated);
             generatorDiagnostics.Verify();
             Assert.Equal(2, generated.Length);
-            
+
             generated.ContainsFileWithContent("IntegrationConsoleTest.Baz_override.cs", @"
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;

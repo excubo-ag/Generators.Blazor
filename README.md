@@ -31,16 +31,7 @@ dotnet add package Excubo.Generators.Blazor
 
 ### Project settings
 
-Your project needs to use `<LangVersion>preview</LangVersion>`, e.g.
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Razor">
-	<PropertyGroup>
-		<LangVersion>preview</LangVersion>
-	</PropertyGroup>
-    <!-- .... -->
-</Project>
-```
+Your project needs to use C# 9.0, therefore `<LangVersion>latest</LangVersion>` or `<LangVersion>preview</LangVersion>` must be specified in the project file.
 
 ## SetParametersAsync Source Generator
 
