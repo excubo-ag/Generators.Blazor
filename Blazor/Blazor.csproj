@@ -14,9 +14,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.1" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="bin\Debug\netstandard2.0\\Blazor.dll" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Remove="bin\Debug\netstandard2.0\\*.dll" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
   <ItemGroup>
