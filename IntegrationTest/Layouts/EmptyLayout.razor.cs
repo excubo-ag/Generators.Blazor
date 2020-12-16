@@ -21,7 +21,8 @@ namespace IntegrationTest.Layouts
             switch (name)
             {
                 case "Body":
-                    this.Body = (RenderFragment)value; break;
+                    this.Body = (RenderFragment)value;
+                    break;
                 default:
                     throw new ArgumentException($"Unknown parameter: {name}");
             }
