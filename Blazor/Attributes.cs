@@ -2,6 +2,25 @@
 
 namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
 {
+    /* These events don't bubble
+  'abort',
+  'blur',
+  'change',
+  'error',
+  'focus',
+  'load',
+  'loadend',
+  'loadstart',
+  'mouseenter',
+  'mouseleave',
+  'progress',
+  'reset',
+  'scroll',
+  'submit',
+  'unload',
+  'toggle',
+     */
+    // should this have [Flag] and what about underlying type
     public enum Clipboard
     {
         oncut = 1 << 0,
