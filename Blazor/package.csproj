@@ -1,7 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
   <!--Title, Description, Tags, Product, Product-->
   <PropertyGroup>
     <Title>Blazor source generator</Title>

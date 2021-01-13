@@ -5,7 +5,6 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>true</WarningsAsErrors>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <AssemblyName>Excubo.Generators.Blazor</AssemblyName>
     <RootNamespace>Excubo.Generators.Blazor</RootNamespace>
   </PropertyGroup>
