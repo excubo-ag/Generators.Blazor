@@ -77,41 +77,41 @@ namespace Tests_Blazor
                     foo.OnMouseOut = value;
                     return;
                 default:
-                {
-                    switch (name.ToLowerInvariant())
                     {
-                        case "value":
-                            foo.Value = value;
-                            return;
-                        case "valuechanged":
-                            foo.ValueChanged = value;
-                            return;
-                        case "childcontent":
-                            foo.ChildContent = value;
-                            return;
-                        case "class":
-                            foo.Class = value;
-                            return;
-                        case "style":
-                            foo.Style = value;
-                            return;
-                        case "onclick":
-                            foo.OnClick = value;
-                            return;
-                        case "onmouseover":
-                            foo.OnMouseOver = value;
-                            return;
-                        case "onmousemove":
-                            foo.OnMouseMove = value;
-                            return;
-                        case "onmouseout":
-                            foo.OnMouseOut = value;
-                            return;
-                        default:
-                            throw new Exception();
+                        switch (name.ToLowerInvariant())
+                        {
+                            case "value":
+                                foo.Value = value;
+                                return;
+                            case "valuechanged":
+                                foo.ValueChanged = value;
+                                return;
+                            case "childcontent":
+                                foo.ChildContent = value;
+                                return;
+                            case "class":
+                                foo.Class = value;
+                                return;
+                            case "style":
+                                foo.Style = value;
+                                return;
+                            case "onclick":
+                                foo.OnClick = value;
+                                return;
+                            case "onmouseover":
+                                foo.OnMouseOver = value;
+                                return;
+                            case "onmousemove":
+                                foo.OnMouseMove = value;
+                                return;
+                            case "onmouseout":
+                                foo.OnMouseOut = value;
+                                return;
+                            default:
+                                throw new Exception();
+                        }
+                        break;
                     }
-                    break;
-                }
             }
         }
         private void Optimized(string name, Foo foo, object value)
@@ -120,29 +120,29 @@ namespace Tests_Blazor
             {
                 case 'O':
                 case 'o':
-                {
-                    if (name[2] == 'M' || name[2] == 'm')
                     {
-                        switch (name[9])
+                        if (name[2] == 'M' || name[2] == 'm')
                         {
-                            case 'e':
-                                foo.OnMouseOver = value;
-                                return;
-                            case 'v':
-                                foo.OnMouseMove = value;
-                                return;
-                            case 't':
-                                foo.OnMouseOut = value;
-                                return;
+                            switch (name[9])
+                            {
+                                case 'e':
+                                    foo.OnMouseOver = value;
+                                    return;
+                                case 'v':
+                                    foo.OnMouseMove = value;
+                                    return;
+                                case 't':
+                                    foo.OnMouseOut = value;
+                                    return;
+                            }
                         }
+                        else
+                        {
+                            foo.OnClick = value;
+                            return;
+                        }
+                        break;
                     }
-                    else
-                    {
-                        foo.OnClick = value;
-                        return;
-                    }
-                    break;
-                }
                 case 'V':
                 case 'v':
                     if (name.Length == 5)
@@ -156,17 +156,17 @@ namespace Tests_Blazor
                     return;
                 case 'C':
                 case 'c':
-                {
-                    if (name.Length == 5)
                     {
-                        foo.Class = value;
+                        if (name.Length == 5)
+                        {
+                            foo.Class = value;
+                        }
+                        else
+                        {
+                            foo.ChildContent = value;
+                        }
                     }
-                    else
-                    {
-                        foo.ChildContent = value;
-                    }
-                }
-                return;
+                    return;
                 case 'S':
                 case 's':
                     foo.Style = value;
