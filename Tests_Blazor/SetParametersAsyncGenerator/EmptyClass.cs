@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace EmptyClass
 {
     [GenerateSetParametersAsyncAttribute]
-    public partial class NothingToSee : LayoutComponentBase
+    public partial class NothingToSee : ComponentBase
     {
     }
 }";
