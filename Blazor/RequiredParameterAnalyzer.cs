@@ -26,7 +26,7 @@ namespace Excubo.Generators.Blazor
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "When a component does not define a parameter and also no CaptureUnmatched parameter, then using anything but the parameters will result in failure.");
-        private static readonly DiagnosticDescriptor FatalError = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor FatalError = new DiagnosticDescriptor(
             id: "BB9999",
             title: "Fatal error",
             messageFormat: "{0} encountered an error while processing {1}. We know from context it has something to do with {2}. Please consider reporting this as an issue.",

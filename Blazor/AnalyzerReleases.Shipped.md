@@ -8,4 +8,5 @@ BB0003 | Correctness | Warning | KeyAnalyzer
 BB0005 | Correctness | Warning | KeyAnalyzer
 BB0004 | Correctness | Warning | RequiredParameterAnalyzer
 BB0008 | Correctness | Warning | RequiredParameterAnalyzer
+BB0009 | Correctness | Warning | LambdaEventCallbackAnalyzer
 BB9999 | Build | Info | RequiredParameterAnalyzer

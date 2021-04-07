@@ -1,10 +1,12 @@
 ﻿@foreach (var element in Enumerable.Range(0, 1))
 {
-    <div class="my-component" @attributes="Additional">
+    <div class="my-component" @attributes="Additional" @onclick="(_) => { }" @onabort="Callback">
         This second Blazor component is defined in the <strong>IntegrationTest</strong> package. @element
     </div>
 }
 @code {
-
+    private void Callback()
+    {
+    }
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Additional { get; set; }
 } 
