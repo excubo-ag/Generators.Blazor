@@ -24,11 +24,13 @@ namespace Excubo.Generators.Blazor
             {
                 return;
             }
+            var rf = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment")!;
+            var rtb = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder")!;
             try
             {
                 foreach (var invocation in receiver.CandidateInvocations)
                 {
-                    AnalyzeInvokation(context, invocation);
+                    AnalyzeInvokation(context, invocation, rf, rtb);
                 }
             }
             catch (Exception e)
@@ -37,7 +39,7 @@ namespace Excubo.Generators.Blazor
             }
         }
 
-        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation)
+        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, INamedTypeSymbol rf, INamedTypeSymbol rtb)
         {
             if (invokation.Expression is MemberAccessExpressionSyntax maes)
             {
@@ -48,12 +50,18 @@ namespace Excubo.Generators.Blazor
                 // So this might be an AddAttribute(int, string, EventCallback)
                 // We're only interested in the last argument, because lambdas in there will be problematic
                 var value_argument = invokation.ArgumentList.Arguments[2];
+                var sm = context.Compilation.GetSemanticModel(invokation.SyntaxTree);
+                //var value_symbol = sm.GetDeclaredSymbol(invokation);
                 var lambda = value_argument.DescendantNodes().FirstOrDefault(n => n.IsKind(SyntaxKind.ParenthesizedLambdaExpression) || n.IsKind(SyntaxKind.SimpleLambdaExpression));
                 if (lambda != null)
                 {
-                    var symbol = context.Compilation.GetSemanticModel(lambda.SyntaxTree).GetSymbolInfo(lambda);
-                    var rf = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment");
-                    var rtb = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder");
+                    var dataFlow = sm.AnalyzeDataFlow(lambda);
+                    var capturedVariables = dataFlow.Captured;
+                    if (!capturedVariables.Any())
+                    {
+                        return;
+                    }
+                    var symbol = sm.GetSymbolInfo(lambda);
                     if (symbol.Symbol is IMethodSymbol ms && ms.Parameters.Length == 1 && (SymbolEqualityComparer.Default.Equals(ms.ReturnType, rf) || SymbolEqualityComparer.Default.Equals(ms.Parameters[0].Type, rtb)))
                     {
                         // this is to exclude lambdas that are just RenderFragments (e.g. ChildContent) or RenderFragment<T> (i.e. templates)
@@ -80,9 +88,9 @@ namespace Excubo.Generators.Blazor
             /// <summary>
             /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
             /// </summary>
-            public void OnVisitSyntaxNode(SyntaxNode syntax_node)
+            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
-                if (syntax_node is InvocationExpressionSyntax invocation &&
+                if (syntaxNode is InvocationExpressionSyntax invocation &&
                     invocation.ArgumentList.Arguments.Count == 3 &&
                     invocation.Expression is MemberAccessExpressionSyntax maes &&
                     maes.Name.ToString() == "AddAttribute")
