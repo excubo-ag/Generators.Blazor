@@ -11,6 +11,7 @@ namespace Tests_Blazor
             var userSource = @"
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Rendering;
 namespace Foo
 {
     public class Bar

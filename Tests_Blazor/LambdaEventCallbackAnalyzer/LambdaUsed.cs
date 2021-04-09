@@ -11,6 +11,7 @@ namespace Tests_Blazor
             var userSource = @"
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Rendering;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -34,7 +35,7 @@ namespace Foo
     }
 }";
             RunGenerator(userSource, out var generatorDiagnostics, out _);
-            generatorDiagnostics.Verify(new DiagnosticResult("BB0009", "(_) => SetItem(element)", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(16, 171));
+            generatorDiagnostics.Verify(new DiagnosticResult("BB0009", "(_) => SetItem(element)", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(17, 171));
         }
     }
 }

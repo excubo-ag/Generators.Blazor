@@ -9,6 +9,9 @@ namespace Tests_Blazor
         public void LambdaNotUsed()
         {
             var userSource = @"
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Rendering;
 namespace Foo
 {
     public class Bar

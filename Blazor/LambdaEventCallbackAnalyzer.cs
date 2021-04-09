@@ -7,7 +7,8 @@ using System.Linq;
 
 namespace Excubo.Generators.Blazor
 {
-    [Generator]
+    // This analyzer is waay too chatty, as every @bind will be reported. This isn't a good idea as of right now, so disabled until this is better understood.
+    //[Generator]
     public partial class LambdaEventCallbackAnalyzer : ISourceGenerator
     {
         private static readonly DiagnosticDescriptor LambdaUsedParameter = new DiagnosticDescriptor(
@@ -25,12 +26,14 @@ namespace Excubo.Generators.Blazor
                 return;
             }
             var rf = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment")!;
+            var ec = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback")!;
+            var ect = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback`1")!;
             var rtb = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder")!;
             try
             {
                 foreach (var invocation in receiver.CandidateInvocations)
                 {
-                    AnalyzeInvokation(context, invocation, rf, rtb);
+                    AnalyzeInvokation(context, invocation, rf, rtb, ec, ect);
                 }
             }
             catch (Exception e)
@@ -39,7 +42,7 @@ namespace Excubo.Generators.Blazor
             }
         }
 
-        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, INamedTypeSymbol rf, INamedTypeSymbol rtb)
+        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, INamedTypeSymbol rf, INamedTypeSymbol rtb, INamedTypeSymbol ec, INamedTypeSymbol ect)
         {
             if (invokation.Expression is MemberAccessExpressionSyntax maes)
             {
@@ -51,23 +54,31 @@ namespace Excubo.Generators.Blazor
                 // We're only interested in the last argument, because lambdas in there will be problematic
                 var value_argument = invokation.ArgumentList.Arguments[2];
                 var sm = context.Compilation.GetSemanticModel(invokation.SyntaxTree);
-                //var value_symbol = sm.GetDeclaredSymbol(invokation);
-                var lambda = value_argument.DescendantNodes().FirstOrDefault(n => n.IsKind(SyntaxKind.ParenthesizedLambdaExpression) || n.IsKind(SyntaxKind.SimpleLambdaExpression));
-                if (lambda != null)
+                if (!(sm.GetSymbolInfo(invokation).Symbol is IMethodSymbol invocation_ms))
                 {
-                    var dataFlow = sm.AnalyzeDataFlow(lambda);
-                    var capturedVariables = dataFlow.Captured;
-                    if (!capturedVariables.Any())
+                    return;
+                }
+                var value_type = invocation_ms.Parameters[2].Type;
+                if (SymbolEqualityComparer.Default.Equals(value_type, ec)
+                 || SymbolEqualityComparer.Default.Equals(value_type.OriginalDefinition, ect))
+                {
+                    var lambda = value_argument.DescendantNodes().FirstOrDefault(n => n.IsKind(SyntaxKind.ParenthesizedLambdaExpression) || n.IsKind(SyntaxKind.SimpleLambdaExpression));
+                    if (lambda != null)
                     {
-                        return;
+                        var dataFlow = sm.AnalyzeDataFlow(lambda);
+                        var capturedVariables = dataFlow.Captured;
+                        if (!capturedVariables.Any())
+                        {
+                            return;
+                        }
+                        var symbol = sm.GetSymbolInfo(lambda);
+                        if (symbol.Symbol is IMethodSymbol ms && ms.Parameters.Length == 1 && (SymbolEqualityComparer.Default.Equals(ms.ReturnType, rf) || SymbolEqualityComparer.Default.Equals(ms.Parameters[0].Type, rtb)))
+                        {
+                            // this is to exclude lambdas that are just RenderFragments (e.g. ChildContent) or RenderFragment<T> (i.e. templates)
+                            return;
+                        }
+                        context.ReportDiagnostic(Diagnostic.Create(LambdaUsedParameter, lambda.GetLocation(), invokation.ArgumentList.Arguments[1].ToString()));
                     }
-                    var symbol = sm.GetSymbolInfo(lambda);
-                    if (symbol.Symbol is IMethodSymbol ms && ms.Parameters.Length == 1 && (SymbolEqualityComparer.Default.Equals(ms.ReturnType, rf) || SymbolEqualityComparer.Default.Equals(ms.Parameters[0].Type, rtb)))
-                    {
-                        // this is to exclude lambdas that are just RenderFragments (e.g. ChildContent) or RenderFragment<T> (i.e. templates)
-                        return;
-                    }
-                    context.ReportDiagnostic(Diagnostic.Create(LambdaUsedParameter, lambda.GetLocation(), invokation.ArgumentList.Arguments[1].ToString()));
                 }
             }
         }

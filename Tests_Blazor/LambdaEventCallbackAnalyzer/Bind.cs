@@ -9,24 +9,43 @@ namespace Tests_Blazor
         public void Bind()
         {
             var userSource = @"
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-namespace Foo
+
+namespace IntegrationTest
 {
-    public class Bar
+    
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Web;
+
+    public partial class Component2 : Microsoft.AspNetCore.Components.ComponentBase
     {
-        public void BuildRenderTree(RenderTreeBuilder builder)
+        
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Bar>(0);
-            builder.AddAttribute(1, ""ValueChanged"", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Microsoft.AspNetCore.Components.EventCallback<System.Int32>>(Microsoft.AspNetCore.Components.EventCallback.Factory.Create<System.Int32>(this, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => value = __value, value))));
-            builder.CloseComponent();
+             foreach (var element in Enumerable.Range(0, 1))
+            {
+                __builder.OpenElement(8, ""input"");
+                __builder.AddAttribute(9, ""type"", ""text"");
+                __builder.AddAttribute(10, ""value"", Microsoft.AspNetCore.Components.BindConverter.FormatValue(text));
+                __builder.AddAttribute(11, ""onchange"", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text));
+                __builder.SetUpdatesAttributeName(""value"");
+                __builder.CloseElement();
+            }
         }
-        [Parameter] public object Value { get; set; }
-        private int value;
+        private string text;
+        private void Callback(object value)
+        {
+        }
+        [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Additional { get; set; }
     }
-}";
+}
+
+";
             RunGenerator(userSource, out var generatorDiagnostics, out _);
-            generatorDiagnostics.Verify();
+            generatorDiagnostics.Verify(new DiagnosticResult("BB0009", "__value => text = __value", Microsoft.CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(23, 129));
         }
     }
 }

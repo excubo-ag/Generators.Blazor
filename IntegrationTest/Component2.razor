@@ -3,8 +3,10 @@
     <div class="my-component" @attributes="Additional" @onclick="(_) => { }">
         This second Blazor component is defined in the <strong>IntegrationTest</strong> package. @element
     </div>
+    <input type="text" @bind-value="text" />
 }
 @code {
+    private string text;
     private void Callback(object value)
     {
     }
