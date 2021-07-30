@@ -181,23 +181,3 @@ namespace Excubo.Generators.Blazor.ExperimentalDoNotUseYet
         public GenerateEventsAttribute(Touch events) { }
     }
 }
-namespace Excubo.Generators.Blazor
-{
-    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    public sealed class RequiredAttribute : Attribute
-    {
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class ParametersAreRequiredByDefaultAttribute : Attribute
-    {
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class GenerateSetParametersAsyncAttribute : Attribute
-    {
-        public bool RequireExactMatch { get; set; }
-    }
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public sealed class DoNotGenerateSetParametersAsyncAttribute : Attribute
-    {
-    }
-}

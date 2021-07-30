@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="package.csproj" Condition="Exists('package.csproj')" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,17 +7,19 @@
     <WarningsAsErrors>true</WarningsAsErrors>
     <AssemblyName>Excubo.Generators.Blazor</AssemblyName>
     <RootNamespace>Excubo.Generators.Blazor</RootNamespace>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NuspecFile>Excubo.Generators.Blazor.nuspec</NuspecFile>
+    <NuspecProperties>id=$(PackageId);version=$(Version);title=$(Title);authors=$(Authors);projecturl=$(PackageProjectUrl);description=$(Description);tags=$(PackageTags);repositoryurl=$(RepositoryUrl);configuration=$(Configuration)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="bin\Debug\netstandard2.0\\*.dll" />
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
-  <ItemGroup>
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Attributes\Attributes.csproj" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Excubo.Generators.Blazor.Attributes</AssemblyName>
+    <RootNamespace>Excubo.Generators.Blazor</RootNamespace>
+  </PropertyGroup>
+
+</Project>
