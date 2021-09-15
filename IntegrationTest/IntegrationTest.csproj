@@ -3,7 +3,7 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blazor/Blazor.csproj" OutputItemType="Analyzer" />
