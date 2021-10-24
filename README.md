@@ -31,7 +31,22 @@ dotnet add package Excubo.Generators.Blazor
 
 ### Project settings
 
-Your project needs to use C# 9.0, therefore `<LangVersion>latest</LangVersion>` or `<LangVersion>preview</LangVersion>` must be specified in the project file.
+Since roslyn does not support roslyn source generator dependencies, the razor source generator is incompatible with this project. You need to opt-out using the setting
+```xml
+<UseRazorSourceGenerator>false</UseRazorSourceGenerator>
+```
+in your project file.
+
+Example:
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
+  </PropertyGroup>
+  ...
+</Project>
+```
 
 ## SetParametersAsync Source Generator
 
