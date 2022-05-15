@@ -15,16 +15,19 @@ Excubo.Generators.Blazor is distributed [via nuget.org](https://www.nuget.org/pa
 [![Nuget](https://img.shields.io/nuget/v/Excubo.Generators.Blazor)](https://www.nuget.org/packages/Excubo.Generators.Blazor/)
 
 #### Package Manager:
+
 ```ps
 Install-Package Excubo.Generators.Blazor
 ```
 
 #### .NET Cli:
+
 ```cmd
 dotnet add package Excubo.Generators.Blazor
 ```
 
 #### Package Reference
+
 ```xml
 <PackageReference Include="Excubo.Generators.Blazor" />
 ```
