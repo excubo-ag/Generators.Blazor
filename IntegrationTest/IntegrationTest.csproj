@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.24" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blazor/Blazor.csproj" OutputItemType="Analyzer" />
