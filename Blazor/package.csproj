@@ -20,7 +20,7 @@
   <!--PackageId, Version-->
   <PropertyGroup>
     <PackageId>Excubo.Generators.Blazor</PackageId>
-    <Version>1.14.13</Version>
+    <Version>1.14.14</Version>
   </PropertyGroup>
   <!--Self Include-->
   <ItemGroup>
