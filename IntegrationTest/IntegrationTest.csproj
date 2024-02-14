@@ -4,7 +4,7 @@
     <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blazor/Blazor.csproj" OutputItemType="Analyzer" />
