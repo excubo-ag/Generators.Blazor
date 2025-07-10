@@ -12,8 +12,8 @@
     <NuspecProperties>id=$(PackageId);version=$(Version);title=$(Title);authors=$(Authors);projecturl=$(PackageProjectUrl);description=$(Description);tags=$(PackageTags);repositoryurl=$(RepositoryUrl);configuration=$(Configuration)</NuspecProperties>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0 in /.dependencies/nuget.csproj" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0 in /.dependencies/nuget.csproj" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
