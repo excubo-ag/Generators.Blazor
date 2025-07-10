@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Tests_Blazor.Helpers
 {
-    public abstract class TestBase<TGenerator> where TGenerator : ISourceGenerator, new()
+    public abstract class TestBase<TGenerator> where TGenerator : IIncrementalGenerator, new()
     {
         private readonly ITestOutputHelper _outputHelper;
 
@@ -24,7 +24,7 @@ namespace Tests_Blazor.Helpers
 
         protected static Compilation CreateCompilation(string source, params MetadataReference[] metadataReferences)
             => CSharpCompilation.Create("compilation",
-                new[] { CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview)) },
+                new[] { CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp13)) },
                 metadataReferences.Concat(new[]
                 {
                     MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location),
@@ -40,12 +40,8 @@ namespace Tests_Blazor.Helpers
                 }),
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        protected static GeneratorDriver CreateDriver(Compilation compilation, params ISourceGenerator[] generators)
-            => CSharpGeneratorDriver.Create(
-                generators: ImmutableArray.Create(generators),
-                additionalTexts: null,
-                parseOptions: compilation.SyntaxTrees.First().Options as CSharpParseOptions,
-                optionsProvider: EmptyAnalyzerConfigOptionsProvider.Instance);
+        protected static GeneratorDriver CreateDriver(Compilation compilation, params IIncrementalGenerator[] generators)
+            => CSharpGeneratorDriver.Create(generators);
 
         protected Compilation RunGenerator(string source, out ImmutableArray<Diagnostic> diagnostics, out ImmutableArray<(string Filename, string Content)> generatedFiles, params MetadataReference[] metadataReferences)
         {
