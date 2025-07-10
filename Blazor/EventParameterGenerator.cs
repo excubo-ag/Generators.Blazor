@@ -2,12 +2,13 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Excubo.Generators.Blazor
 {
     [Generator]
-    public partial class EventParameterGenerator : ISourceGenerator
+    public partial class EventParameterGenerator : IIncrementalGenerator
     {
         private static readonly DiagnosticDescriptor EventNotUsed = new DiagnosticDescriptor(
             id: "BB0002",
@@ -35,20 +36,21 @@ namespace Excubo.Generators.Blazor
             description: "TODO");
 
 
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // Register a syntax receiver that will be created for each generation pass
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            IncrementalValuesProvider<ClassDeclarationSyntax> classDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (syntax_node, _) => syntax_node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.AttributeLists.Count > 0,
+                transform: static (context, _) => context.Node as ClassDeclarationSyntax)
+                .Where(static m => m is not null)!;
+            IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> compilationAndClasses
+    = context.CompilationProvider.Combine(classDeclarations.Collect());
+            context.RegisterSourceOutput(compilationAndClasses, static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        public static void Execute(Compilation compilation, ImmutableArray<ClassDeclarationSyntax> classes, SourceProductionContext context)
         {
-            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
-            {
-                return;
-            }
-
-            var candidate_classes = GetCandidateClasses(receiver, context.Compilation);
+            var candidate_classes = GetCandidateClasses(classes, compilation);
 
             foreach (var class_symbol in candidate_classes.Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>())
             {
@@ -121,7 +123,7 @@ namespace Excubo.Generators.Blazor
                 }
             }
         }
-        private static void GenerateSetParametersAsyncMethod(GeneratorExecutionContext context, INamedTypeSymbol class_symbol)
+        private static void GenerateSetParametersAsyncMethod(SourceProductionContext context, INamedTypeSymbol class_symbol)
         {
             var namespaceName = class_symbol.ContainingNamespace.ToDisplayString();
             var type_kind = class_symbol.TypeKind switch { TypeKind.Class => "class", TypeKind.Interface => "interface", _ => "struct" };
@@ -207,12 +209,12 @@ namespace {namespaceName}
         /// <param name="receiver"></param>
         /// <param name="compilation"></param>
         /// <returns></returns>
-        private static IEnumerable<INamedTypeSymbol> GetCandidateClasses(SyntaxReceiver receiver, Compilation compilation)
+        private static IEnumerable<INamedTypeSymbol> GetCandidateClasses(ImmutableArray<ClassDeclarationSyntax> classes, Compilation compilation)
         {
             var positiveAttributeSymbol = compilation.GetTypeByMetadataName("Excubo.Generators.Blazor.ExperimentalDoNotUseYet.GenerateEventsAttribute");
 
             // loop over the candidate methods, and keep the ones that are actually annotated
-            foreach (var class_declaration in receiver.CandidateClasses)
+            foreach (var class_declaration in classes)
             {
                 var model = compilation.GetSemanticModel(class_declaration.SyntaxTree);
                 var class_symbol = model.GetDeclaredSymbol(class_declaration);
@@ -228,26 +230,6 @@ namespace {namespaceName}
                 if (attributes.Any(ad => ad.AttributeClass != null && ad.AttributeClass.Equals(positiveAttributeSymbol, SymbolEqualityComparer.Default)))
                 {
                     yield return class_symbol;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Created on demand before each generation pass
-        /// </summary>
-        internal class SyntaxReceiver : ISyntaxReceiver
-        {
-            public List<ClassDeclarationSyntax> CandidateClasses { get; } = new List<ClassDeclarationSyntax>();
-
-            /// <summary>
-            /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
-            /// </summary>
-            public void OnVisitSyntaxNode(SyntaxNode syntax_node)
-            {
-                // any class with at least one attribute is a candidate for property generation
-                if (syntax_node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.AttributeLists.Count > 0)
-                {
-                    CandidateClasses.Add(classDeclarationSyntax);
                 }
             }
         }

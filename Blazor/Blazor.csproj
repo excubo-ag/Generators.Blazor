@@ -10,6 +10,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NuspecFile>Excubo.Generators.Blazor.nuspec</NuspecFile>
     <NuspecProperties>id=$(PackageId);version=$(Version);title=$(Title);authors=$(Authors);projecturl=$(PackageProjectUrl);description=$(Description);tags=$(PackageTags);repositoryurl=$(RepositoryUrl);configuration=$(Configuration)</NuspecProperties>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" />

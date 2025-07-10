@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Excubo.Generators.Blazor
@@ -27,7 +28,7 @@ namespace Excubo.Generators.Blazor
         }
     }
     [Generator]
-    public partial class KeyAnalyzer : ISourceGenerator
+    public partial class KeyAnalyzer : IIncrementalGenerator
     {
         private static readonly DiagnosticDescriptor KeylessForeach = new DiagnosticDescriptor(
             id: "BB0003",
@@ -46,25 +47,22 @@ namespace Excubo.Generators.Blazor
             isEnabledByDefault: true,
             description: "A key must be unique per loop iteration. Therefore, it cannot be a constant expression.");
 
-        public void Execute(GeneratorExecutionContext context)
+        public static void Execute(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
         {
-            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
+            foreach (var method in methods.Where(m => m.Body != null))
             {
-                return;
+                AnalyzeRenderTreeMethod(compilation, context, method.Body!.Statements);
             }
-
-            var compilation = context.Compilation;
-            foreach (var method in receiver.CandidateMethods.Where(m => m.Body != null))
+        }
+        public static void Execute(Compilation compilation, ImmutableArray<ParenthesizedLambdaExpressionSyntax> lambdas, SourceProductionContext context)
+        {
+            foreach (var lambda in lambdas)
             {
-                AnalyzeRenderTreeMethod(context, method.Body!.Statements);
-            }
-            foreach (var lambda in receiver.CandidateLambdas)
-            {
-                AnalyzeRenderTreeMethod(context, (lambda.Body as BlockSyntax)!.Statements);
+                AnalyzeRenderTreeMethod(compilation, context, (lambda.Body as BlockSyntax)!.Statements);
             }
         }
 
-        private static void AnalyzeRenderTreeMethod(GeneratorExecutionContext context, SyntaxList<StatementSyntax> statements)
+        private static void AnalyzeRenderTreeMethod(Compilation compilation, SourceProductionContext context, SyntaxList<StatementSyntax> statements)
         {
             foreach (var statement in statements)
             {
@@ -79,20 +77,20 @@ namespace Excubo.Generators.Blazor
                     }
                     var level = -1;
                     var saw_key = false;
-                    AnalyzeStatements(context, for_keyword, for_block.Statements, ref level, ref saw_key);
+                    AnalyzeStatements(compilation, context, for_keyword, for_block.Statements, ref level, ref saw_key);
                 }
             }
         }
 
-        private static void AnalyzeStatements(GeneratorExecutionContext context, SyntaxToken? for_keyword, SyntaxList<StatementSyntax> statements, ref int level, ref bool saw_key)
+        private static void AnalyzeStatements(Compilation compilation, SourceProductionContext context, SyntaxToken? for_keyword, SyntaxList<StatementSyntax> statements, ref int level, ref bool saw_key)
         {
             foreach (var invokation in statements.SelectMany(s => s.RecurseExpressions()).Select(s => s.Expression).OfType<InvocationExpressionSyntax>())
             {
-                AnalyzeInvokation(context, for_keyword, ref level, ref saw_key, invokation);
+                AnalyzeInvokation(compilation, context, for_keyword, ref level, ref saw_key, invokation);
             }
         }
 
-        private static void AnalyzeInvokation(GeneratorExecutionContext context, SyntaxToken? for_keyword, ref int level, ref bool saw_key, InvocationExpressionSyntax invokation)
+        private static void AnalyzeInvokation(Compilation compilation, SourceProductionContext context, SyntaxToken? for_keyword, ref int level, ref bool saw_key, InvocationExpressionSyntax invokation)
         {
             if (invokation.Expression is MemberAccessExpressionSyntax maes)
             {
@@ -123,7 +121,7 @@ namespace Excubo.Generators.Blazor
                 }
                 else if (invokation.ArgumentList.Arguments.Any(a => a.Expression is IdentifierNameSyntax ins && ins.Identifier.ToString().Contains("builder")))
                 {
-                    var model = context.Compilation.GetSemanticModel(invokation.SyntaxTree);
+                    var model = compilation.GetSemanticModel(invokation.SyntaxTree);
                     var called_method = model.GetSymbolInfo(invokation);
                     if (called_method.Symbol != null && called_method.Symbol.Kind is SymbolKind.Method)
                     {
@@ -134,7 +132,7 @@ namespace Excubo.Generators.Blazor
                             {
                                 if (syntax_reference.GetSyntax() is MethodDeclarationSyntax definition)
                                 {
-                                    AnalyzeStatements(context, for_keyword, definition!.Body!.Statements, ref level, ref saw_key);
+                                    AnalyzeStatements(compilation, context, for_keyword, definition!.Body!.Statements, ref level, ref saw_key);
                                 }
                             }
                         }
@@ -142,39 +140,27 @@ namespace Excubo.Generators.Blazor
                 }
             }
         }
-
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // Register a syntax receiver that will be created for each generation pass
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-        }
-
-        /// <summary>
-        /// Created on demand before each generation pass
-        /// </summary>
-        internal class SyntaxReceiver : ISyntaxReceiver
-        {
-            public List<MethodDeclarationSyntax> CandidateMethods { get; } = new List<MethodDeclarationSyntax>();
-            public List<ParenthesizedLambdaExpressionSyntax> CandidateLambdas { get; } = new List<ParenthesizedLambdaExpressionSyntax>();
-
-            /// <summary>
-            /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
-            /// </summary>
-            public void OnVisitSyntaxNode(SyntaxNode syntax_node)
-            {
-                // any class with at least one attribute is a candidate for property generation
-                if (syntax_node is MethodDeclarationSyntax method && method.Identifier.ToString() == "BuildRenderTree")
-                {
-                    CandidateMethods.Add(method);
-                }
-                if (syntax_node is ParenthesizedLambdaExpressionSyntax lambda
+            IncrementalValuesProvider<MethodDeclarationSyntax> methods = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (syntax_node, _) => syntax_node is MethodDeclarationSyntax method && method.Identifier.ToString() == "BuildRenderTree",
+                transform: static (context, _) => context.Node as MethodDeclarationSyntax)
+                .Where(static m => m is not null)!;
+            // Register a syntax receiver that will be created for each generation pass
+            IncrementalValuesProvider<ParenthesizedLambdaExpressionSyntax> lambdas = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (syntax_node, _) => syntax_node is ParenthesizedLambdaExpressionSyntax lambda
                     && lambda.ParameterList.Parameters.Count == 1
                     && lambda.ParameterList.Parameters[0].Identifier.ToString().Contains("builder")
-                    && lambda.Body is BlockSyntax)
-                {
-                    CandidateLambdas.Add(lambda);
-                }
-            }
+                    && lambda.Body is BlockSyntax,
+                transform: static (context, _) => context.Node as ParenthesizedLambdaExpressionSyntax)
+                .Where(static m => m is not null)!;
+
+
+            IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methods.Collect());
+            context.RegisterSourceOutput(compilationAndMethods, static (spc, source) => Execute(source.Item1, source.Item2, spc));
+            IncrementalValueProvider<(Compilation, ImmutableArray<ParenthesizedLambdaExpressionSyntax>)> compilationAndLambdas = context.CompilationProvider.Combine(lambdas.Collect());
+            context.RegisterSourceOutput(compilationAndLambdas, static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
     }
 }

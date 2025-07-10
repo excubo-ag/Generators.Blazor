@@ -3,13 +3,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Excubo.Generators.Blazor
 {
     // This analyzer is waay too chatty, as every @bind will be reported. This isn't a good idea as of right now, so disabled until this is better understood.
     //[Generator]
-    public partial class LambdaEventCallbackAnalyzer : ISourceGenerator
+    public partial class LambdaEventCallbackAnalyzer : IIncrementalGenerator
     {
         private static readonly DiagnosticDescriptor LambdaUsedParameter = new DiagnosticDescriptor(
             id: "BB0009",
@@ -19,21 +20,17 @@ namespace Excubo.Generators.Blazor
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: "Lambdas may cause unnecessary re-rendering (see https://github.com/dotnet/aspnetcore/issues/18919).");
-        public void Execute(GeneratorExecutionContext context)
+        public static void Execute(Compilation compilation, ImmutableArray<InvocationExpressionSyntax> invocations, SourceProductionContext context)
         {
-            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
-            {
-                return;
-            }
-            var rf = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment")!;
-            var ec = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback")!;
-            var ect = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback`1")!;
-            var rtb = context.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder")!;
+            var rf = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment")!;
+            var ec = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback")!;
+            var ect = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback`1")!;
+            var rtb = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder")!;
             try
             {
-                foreach (var invocation in receiver.CandidateInvocations)
+                foreach (var invocation in invocations)
                 {
-                    AnalyzeInvokation(context, invocation, rf, rtb, ec, ect);
+                    AnalyzeInvokation(compilation, context, invocation, rf, rtb, ec, ect);
                 }
             }
             catch (Exception e)
@@ -42,7 +39,7 @@ namespace Excubo.Generators.Blazor
             }
         }
 
-        private static void AnalyzeInvokation(GeneratorExecutionContext context, InvocationExpressionSyntax invokation, INamedTypeSymbol rf, INamedTypeSymbol rtb, INamedTypeSymbol ec, INamedTypeSymbol ect)
+        private static void AnalyzeInvokation(Compilation compilation, SourceProductionContext context, InvocationExpressionSyntax invokation, INamedTypeSymbol rf, INamedTypeSymbol rtb, INamedTypeSymbol ec, INamedTypeSymbol ect)
         {
             if (invokation.Expression is MemberAccessExpressionSyntax maes)
             {
@@ -53,7 +50,7 @@ namespace Excubo.Generators.Blazor
                 // So this might be an AddAttribute(int, string, EventCallback)
                 // We're only interested in the last argument, because lambdas in there will be problematic
                 var value_argument = invokation.ArgumentList.Arguments[2];
-                var sm = context.Compilation.GetSemanticModel(invokation.SyntaxTree);
+                var sm = compilation.GetSemanticModel(invokation.SyntaxTree);
                 if (!(sm.GetSymbolInfo(invokation).Symbol is IMethodSymbol invocation_ms))
                 {
                     return;
@@ -82,33 +79,18 @@ namespace Excubo.Generators.Blazor
                 }
             }
         }
-
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // Register a syntax receiver that will be created for each generation pass
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-        }
-
-        /// <summary>
-        /// Created on demand before each generation pass
-        /// </summary>
-        internal class SyntaxReceiver : ISyntaxReceiver
-        {
-            public List<InvocationExpressionSyntax> CandidateInvocations { get; } = new List<InvocationExpressionSyntax>();
-
-            /// <summary>
-            /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
-            /// </summary>
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is InvocationExpressionSyntax invocation &&
+            IncrementalValuesProvider<InvocationExpressionSyntax> invocations = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (syntax_node, _) => syntax_node is InvocationExpressionSyntax invocation &&
                     invocation.ArgumentList.Arguments.Count == 3 &&
                     invocation.Expression is MemberAccessExpressionSyntax maes &&
-                    maes.Name.ToString() == "AddAttribute")
-                {
-                    CandidateInvocations.Add(invocation);
-                }
-            }
+                    maes.Name.ToString() == "AddAttribute",
+                transform: static (context, _) => context.Node as InvocationExpressionSyntax)
+                .Where(static m => m is not null)!;
+            IncrementalValueProvider<(Compilation, ImmutableArray<InvocationExpressionSyntax>)> compilationAndInvocations = context.CompilationProvider.Combine(invocations.Collect());
+            context.RegisterSourceOutput(compilationAndInvocations, static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
     }
 }

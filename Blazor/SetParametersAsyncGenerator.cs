@@ -2,12 +2,13 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Excubo.Generators.Blazor
 {
     [Generator]
-    public partial class SetParametersAsyncGenerator : ISourceGenerator
+    public partial class SetParametersAsyncGenerator : IIncrementalGenerator
     {
         private static readonly DiagnosticDescriptor ParameterNameConflict = new DiagnosticDescriptor(
             id: "BB0001",
@@ -18,21 +19,23 @@ namespace Excubo.Generators.Blazor
             isEnabledByDefault: true,
             description: "Parameter names must be case insensitive to be usable in routes. Rename the parameter to not be in conflict with other parameters.");
 
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // Register a syntax receiver that will be created for each generation pass
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            IncrementalValuesProvider<ClassDeclarationSyntax> classDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (syntax_node, _) => syntax_node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.AttributeLists.Count > 0,
+                transform: static (context, _) => context.Node as ClassDeclarationSyntax)
+                .Where(static m => m is not null)!;
+            IncrementalValueProvider<(Compilation, ImmutableArray<ClassDeclarationSyntax>)> compilationAndClasses
+    = context.CompilationProvider.Combine(classDeclarations.Collect());
+            context.RegisterSourceOutput(compilationAndClasses, static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        public static void Execute(Compilation compilation, ImmutableArray<ClassDeclarationSyntax> classes, SourceProductionContext context)
         {
             // https://github.com/dotnet/AspNetCore.Docs/blob/1e199f340780f407a685695e6c4d953f173fa891/aspnetcore/blazor/webassembly-performance-best-practices.md#implement-setparametersasync-manually
-            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
-            {
-                return;
-            }
 
-            var candidate_classes = GetCandidateClasses(receiver, context.Compilation);
+            var candidate_classes = GetCandidateClasses(classes, compilation);
 
             foreach (var class_symbol in candidate_classes.Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>())
             {
@@ -40,7 +43,7 @@ namespace Excubo.Generators.Blazor
             }
         }
 
-        private static void GenerateSetParametersAsyncMethod(GeneratorExecutionContext context, INamedTypeSymbol class_symbol)
+        private static void GenerateSetParametersAsyncMethod(SourceProductionContext context, INamedTypeSymbol class_symbol)
         {
             var force_exact_match = class_symbol.GetAttributes().Any(a => a.NamedArguments.Any(na => na.Key == "RequireExactMatch" && na.Value.Value is bool v && v));
             var namespaceName = class_symbol.ContainingNamespace.ToDisplayString();
@@ -194,13 +197,13 @@ namespace {namespaceName}
         /// <param name="receiver"></param>
         /// <param name="compilation"></param>
         /// <returns></returns>
-        private static IEnumerable<INamedTypeSymbol> GetCandidateClasses(SyntaxReceiver receiver, Compilation compilation)
+        private static IEnumerable<INamedTypeSymbol> GetCandidateClasses(ImmutableArray<ClassDeclarationSyntax> classes, Compilation compilation)
         {
             var positiveAttributeSymbol = compilation.GetTypeByMetadataName("Excubo.Generators.Blazor.GenerateSetParametersAsyncAttribute");
             var negativeAttributeSymbol = compilation.GetTypeByMetadataName("Excubo.Generators.Blazor.DoNotGenerateSetParametersAsyncAttribute");
 
             // loop over the candidate methods, and keep the ones that are actually annotated
-            foreach (var class_declaration in receiver.CandidateClasses)
+            foreach (var class_declaration in classes)
             {
                 var model = compilation.GetSemanticModel(class_declaration.SyntaxTree);
                 var class_symbol = model.GetDeclaredSymbol(class_declaration);
@@ -217,26 +220,6 @@ namespace {namespaceName}
                     && !attributes.Any(ad => ad.AttributeClass != null && ad.AttributeClass.Equals(negativeAttributeSymbol, SymbolEqualityComparer.Default)))
                 {
                     yield return class_symbol;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Created on demand before each generation pass
-        /// </summary>
-        internal class SyntaxReceiver : ISyntaxReceiver
-        {
-            public List<ClassDeclarationSyntax> CandidateClasses { get; } = new List<ClassDeclarationSyntax>();
-
-            /// <summary>
-            /// Called for every syntax node in the compilation, we can inspect the nodes and save any information useful for generation
-            /// </summary>
-            public void OnVisitSyntaxNode(SyntaxNode syntax_node)
-            {
-                // any class with at least one attribute is a candidate for property generation
-                if (syntax_node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.AttributeLists.Count > 0)
-                {
-                    CandidateClasses.Add(classDeclarationSyntax);
                 }
             }
         }
