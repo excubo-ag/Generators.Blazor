@@ -24,7 +24,7 @@ namespace Tests_Blazor.Helpers
 
         protected static Compilation CreateCompilation(string source, params MetadataReference[] metadataReferences)
             => CSharpCompilation.Create("compilation",
-                new[] { CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp13)) },
+                new[] { CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp14)) },
                 metadataReferences.Concat(new[]
                 {
                     MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location),
